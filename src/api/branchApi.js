@@ -11,5 +11,10 @@ export const branchApi = {
 
     getById: (id) => {
         return axiosClient.get(`/branches/${id}`)
+    },
+
+    //Lấy ra các branch có vị trí gần nhất
+    getNearBranches: (form) => {
+        return axiosClient.post(`/branches/nearBranches`, form)
     }
 }

@@ -4,10 +4,15 @@ import ProductCard from "../../components/common/ProductCard";
 import { ArrowRight, ShoppingCart, Loader2 } from "lucide-react";
 import { itemApi } from "../../api/itemApi";
 import { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
+import { servicePackageApi } from "../../api/servicePackageApi";
+
 export default function Home() {
 
     const [items, setItems] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate()
+    const [services, setServices] = useState([]);
 
     useEffect(() => {
         const fetchHomeData = async () => {
@@ -21,11 +26,12 @@ export default function Home() {
                 //     productApi.getAllServices()
                 // ]);
 
-                const itemsData = await itemApi.getAllItems()
-
+                const itemsData = await itemApi.getAllItems({ page: 0, size: 15 })
+                const serviceData = await servicePackageApi.getAll({ page: 0, size: 8 })
                 // Cập nhật dữ liệu lấy được vào state
                 setItems(itemsData.content || []);
-                console.log(itemsData)
+                setServices(serviceData.content || [])
+                // console.log(itemsData)
                 // setServices(servicesData.content || []);
             } catch (error) {
                 console.error("Không thể tải dữ liệu từ server", error);
@@ -48,12 +54,18 @@ export default function Home() {
             </div>
         );
     }
-    const mockServices = [
-        { id: 1, name: "Gói bảo dưỡng định kỳ hàng tháng (Xe ga)", price: 800000, img: null },
-        { id: 2, name: "Gói bảo dưỡng định kỳ hàng năm (Xe số)", price: 1500000, img: null },
-        { id: 3, name: "Vệ sinh kim phun, buồng đốt", price: 450000, img: null },
-        { id: 4, name: "Sửa chữa, đại tu động cơ tổng thể", price: 5000000, img: null },
-    ];
+
+
+    const handleViewItemDetail = (id) => {
+        // console.log("Xem chi tiết linh kiện có ID:", id);
+        navigate(`/itemDetailPage/${id}`);
+    };
+
+
+    const handleViewServiceDetail = (id) => {
+        // console.log("Xem chi tiết linh kiện có ID:", id);
+        navigate(`/servicePackageDetailPage/${id}`);
+    };
 
 
     return (
@@ -81,6 +93,7 @@ export default function Home() {
                             price={part.price}
                             image={part.imageUrl}
                             actionText="Xem chi tiết"
+                            onAction={() => handleViewItemDetail(part.id)}
                             actionIcon={ArrowRight} // Dùng Icon Mũi tên
                         />
                     ))}
@@ -97,13 +110,14 @@ export default function Home() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {mockServices.map(service => (
+                    {services.map(service => (
                         <ProductCard
                             key={service.id}
                             name={service.name}
                             price={service.price}
-                            image={service.img}
+                            image={service.image}
                             actionText="Đăng ký ngay"
+                            onAction={() => handleViewServiceDetail(service.id)}
                             actionIcon={ShoppingCart} // Dùng Icon Giỏ hàng
                         />
                     ))}

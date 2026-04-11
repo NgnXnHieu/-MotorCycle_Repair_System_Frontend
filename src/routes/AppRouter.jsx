@@ -16,6 +16,7 @@ import BranchPage from '../Pages/customer/BranchPage'
 import BookingPage from '../Pages/customer/BookingPage'
 import ServicePage from '../Pages/customer/ServicePage'
 import FavouritePage from '../Pages/customer/FavouritePage'
+import EmergencyBooking from '../Pages/customer/EmergencyBooking'
 // import Dashboard from '../pages/admin/Dashboard'
 
 export default function AppRouter() {
@@ -39,6 +40,7 @@ export default function AppRouter() {
                     <Route path="/bookingPage" element={<BookingPage />} />
                     <Route path="/servicePage" element={<ServicePage />} />
                     <Route path="/favouritePage" element={<FavouritePage />} />
+                    <Route path="/emergencyBooking" element={<EmergencyBooking />} />
                 </Route>
 
                 {/* Nhóm 2: Các trang dùng Staff Layout (Có Sidebar bên trái) */}

@@ -1,10 +1,11 @@
 // src/pages/public/Home/HeroSection.jsx
 import { CalendarDays, AlertTriangle, Wrench } from 'lucide-react'
+import { useNavigate } from 'react-router-dom';
 
 export default function HeroSection() {
     // Đường dẫn ảnh minh họa trên mạng (Bạn có thể thay bằng ảnh thật sau)
     const imageUrl = "https://images.unsplash.com/photo-1625047509248-ec889cbff17f?q=80&w=2070&auto=format&fit=crop";
-
+    const navigate = useNavigate()
     return (
         // Lớp ngoài cùng: relative để các lớp con absolute dựa vào
         // rounded-3xl để bo góc đẹp giống phác thảo của bạn
@@ -42,9 +43,12 @@ export default function HeroSection() {
                             <CalendarDays className="h-5 w-5" />
                             Đặt lịch bảo dưỡng ngay
                         </button>
-                        <button className="flex items-center justify-center gap-2.5 bg-red-600 hover:bg-red-700 text-white px-9 py-4 rounded-xl font-bold transition-all text-lg shadow-lg shadow-red-500/30 hover:scale-105 transform">
+                        <button
+                            onClick={() => navigate(`/emergencyBooking`)}
+                            className="cusor-pointer flex items-center justify-center gap-2.5 bg-red-600 hover:bg-red-700 text-white px-9 py-4 rounded-xl font-bold transition-all text-lg shadow-lg shadow-red-500/30 hover:scale-105 transform">
                             <AlertTriangle className="h-5 w-5" />
                             Sửa chữa khẩn cấp
+
                         </button>
                     </div>
                 </div>

@@ -253,12 +253,12 @@ export default function BranchPage() {
                             <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_40px_rgba(0,0,0,0.05)] z-10"></div>
 
                             <div className="absolute top-5 left-5 right-5 z-20 flex justify-between pointer-events-none">
-                                <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-xl shadow-lg border border-slate-200 transition-all">
-                                    <p className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                {/* <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-xl shadow-lg border border-slate-200 transition-all"> */}
+                                {/* <p className="text-sm font-bold text-slate-800 flex items-center gap-2">
                                         <MapPin size={18} className="text-indigo-600 animate-bounce" />
                                         Bản đồ tự động ghim vị trí
-                                    </p>
-                                </div>
+                                    </p> */}
+                                {/* </div> */}
                             </div>
 
                             {isLoading ? (

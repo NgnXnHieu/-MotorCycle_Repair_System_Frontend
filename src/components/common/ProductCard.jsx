@@ -1,6 +1,7 @@
 import { ArrowRight, ShoppingCart, Package } from 'lucide-react'
+import { format } from '../../utils/format'
 
-export default function ProductCard({ image, name, price, actionText, actionIcon: ActionIcon }) {
+export default function ProductCard({ image, name, price, actionText, actionIcon: ActionIcon, onAction }) {
     return (
         // Thêm h-full để đảm bảo mọi thẻ trên cùng 1 hàng đều cao bằng nhau
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5 flex flex-col gap-4 group h-full">
@@ -26,12 +27,14 @@ export default function ProductCard({ image, name, price, actionText, actionIcon
                     4. pt-2: Giữ 1 khoảng cách an toàn với tên sản phẩm 
                 */}
                 <p className="mt-auto pt-2 text-xl font-extrabold text-red-600">
-                    {price.toLocaleString('vi-VN')}đ
+                    {format.formatCurrency(price)}đ
                 </p>
             </div>
 
             {/* Nút hành động */}
-            <button className="w-full flex items-center justify-center gap-2 bg-blue-50 text-blue-700 py-3 rounded-xl font-semibold hover:bg-blue-600 hover:text-white transition-all group/btn shrink-0">
+            <button
+                onClick={onAction}
+                className="cursor-pointer w-full flex items-center justify-center gap-2 bg-blue-50 text-blue-700 py-3 rounded-xl font-semibold hover:bg-blue-600 hover:text-white transition-all group/btn shrink-0">
                 <span>{actionText}</span>
                 {ActionIcon && <ActionIcon className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />}
             </button>

@@ -1,5 +1,10 @@
 import axiosClient from "./axiosClient";
 export const servicePackageApi = {
+
+    getAll: (params) => {
+        return axiosClient.get(`/servicePackages`, { params: params });
+    },
+
     getFiltedAll: (filterform) => {
         return axiosClient.post(`/servicePackages/filtedServicePackage`, filterform, {
             params: {
