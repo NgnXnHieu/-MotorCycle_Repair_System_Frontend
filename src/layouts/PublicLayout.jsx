@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import Navbar from '../components/common/Navbar'
+import ChatBotWidget from '../Pages/customer/ChatBotWidget'
 
 export default function PublicLayout() {
     return (
@@ -21,9 +22,12 @@ export default function PublicLayout() {
             {/* 3. FOOTER (Cập nhật padding cho đẹp hơn) */}
             <footer className="bg-gray-800 text-white p-6 md:p-10 text-center border-t border-gray-700">
                 <p className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    © 2026 Bản quyền thuộc về Hệ thống sửa xe MotorCare.
+                    © Trang Web chỉ phục vụ cho mục đích học tập.
                 </p>
             </footer>
+
+            {/* 4. CHATBOT WIDGET */}
+            <ChatBotWidget />
         </div>
     )
 }

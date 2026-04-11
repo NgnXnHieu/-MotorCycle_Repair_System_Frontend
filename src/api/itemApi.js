@@ -2,8 +2,8 @@ import axiosClient from './axiosClient';
 
 export const itemApi = {
     // Lấy danh sách phụ tùng (Sẽ gọi vào http://localhost:8080/api/items)
-    getAllItems: () => {
-        return axiosClient.get('/items');
+    getAllItems: (params) => {
+        return axiosClient.get('/items', { params: params });
     },
 
     getFiltedItem: (filterForm) => {
