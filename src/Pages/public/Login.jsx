@@ -16,9 +16,15 @@ export default function Login() {
 
             console.log("Đăng nhập thành công:", response);
             //Thông báo hệ thống gọi hàm getProfile
-            await fetchProfile();
-            // Chuyển hướng người dùng về Trang chủ
-            navigate('/');
+            const role = response?.role;
+            if (role === "ROLE_CUSTOMER") {
+                await fetchProfile();
+                navigate('/');
+            } else if (role === "ROLE_RECEPTIONIST") {
+                navigate('/receptionist/appointmentManagement');
+            } else if (role === "ROLE_GENERAL_MANAGER") {
+                navigate('/generalManager/employeeProfile');
+            }
 
         } catch (error) {
             console.error("Lỗi đăng nhập:", error);

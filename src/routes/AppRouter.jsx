@@ -17,6 +17,12 @@ import BookingPage from '../Pages/customer/BookingPage'
 import ServicePage from '../Pages/customer/ServicePage'
 import FavouritePage from '../Pages/customer/FavouritePage'
 import EmergencyBooking from '../Pages/customer/EmergencyBooking'
+import EmployeeSidebar from "../layouts/EmployeeSidebar"
+import AppointmentManagement from '../Pages/receptionist/AppointmentManagement'
+import WalkInBooking from '../Pages/receptionist/WalkInBooking'
+import EmployeeProfile from '../Pages/staffPage/EmployeeProfile'
+import GenaralBranchSidebar from '../layouts/GenaralBranchSidebar'
+import BranchManagement from '../Pages/general_manager/branchManager'
 // import Dashboard from '../pages/admin/Dashboard'
 
 export default function AppRouter() {
@@ -45,8 +51,22 @@ export default function AppRouter() {
 
                 {/* Nhóm 2: Các trang dùng Staff Layout (Có Sidebar bên trái) */}
                 <Route element={<StaffLayout />}>
-                    {/* <Route path="/admin/dashboard" element={<Dashboard />} /> */}
+                    <Route path="admin/sparePartsPage" element={<SparePartsPage />} />
                     {/* Sau này thêm route cho thợ, quản lý nhánh... vào đây */}
+                </Route>
+
+                {/* Giao diện bên nhân viên tư vấn (Receptionist)  */}
+                <Route element={<EmployeeSidebar />}>
+                    <Route path="receptionist/sparePartsPage" element={<SparePartsPage />} />
+                    <Route path="receptionist/appointmentManagement" element={<AppointmentManagement />} />
+                    <Route path="receptionist/walkInBooking" element={<WalkInBooking />} />
+                    <Route path="receptionist/employeeProfile" element={<EmployeeProfile />} />
+
+                </Route>
+
+                <Route element={<GenaralBranchSidebar />}>
+                    <Route path='generalManager/employeeProfile' element={<EmployeeProfile />} />
+                    <Route path='generalManager/branchManagement' element={<BranchManagement />} />
                 </Route>
             </Routes>
         </BrowserRouter>

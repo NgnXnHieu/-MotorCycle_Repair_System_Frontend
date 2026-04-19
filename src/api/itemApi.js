@@ -42,7 +42,16 @@ export const itemApi = {
     //Lấy ra danh sách yêu thích
     getMyFavouriteList: () => {
         return axiosClient.get(`/favouriteItem/myFavouriteList`)
-    }
+    },
 
+    //Lấy ra các item(có thể lọc) for receptionist
+    getItem4Rep: (form) => {
+        return axiosClient.post(`/items/item4Rep`, form, {
+            params: {
+                page: form.page,
+                size: form.size
+            }
+        })
+    },
 
 };
