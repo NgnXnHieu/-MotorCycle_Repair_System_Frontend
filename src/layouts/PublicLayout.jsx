@@ -14,9 +14,9 @@ export default function PublicLayout() {
           Thêm Container giới hạn chiều rộng (max-w-7xl)
           và căn giữa (mx-auto) cho toàn bộ nội dung bên trong
         */}
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 w-full">
-                    <Outlet />
-                </div>
+                <main className="flex-grow w-full">
+                    <Outlet /> {/* Không còn lồng nhốt nữa, thả rông hoàn toàn */}
+                </main>
             </main>
 
             {/* 3. FOOTER (Cập nhật padding cho đẹp hơn) */}

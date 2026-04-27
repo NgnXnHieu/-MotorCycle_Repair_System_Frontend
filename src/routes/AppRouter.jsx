@@ -23,6 +23,19 @@ import WalkInBooking from '../Pages/receptionist/WalkInBooking'
 import EmployeeProfile from '../Pages/staffPage/EmployeeProfile'
 import GenaralBranchSidebar from '../layouts/GenaralBranchSidebar'
 import BranchManagement from '../Pages/general_manager/branchManager'
+import ItemManagement from '../Pages/general_manager/ItemManagement'
+import ServicePackageManagement from '../Pages/general_manager/ServicePackageManagement'
+import ContentManager from '../Pages/general_manager/ContentManager'
+import CategoryManagement from '../Pages/general_manager/CategoryManagement'
+import ServiceManagement from '../Pages/general_manager/ServiceManagement'
+import PersonnelManagement from '../Pages/general_manager/PersonelManagement'
+import Dashboard from '../Pages/general_manager/Dashboard'
+import BranchManagerSideBar from '../layouts/BranchManagerSideBar'
+import DashboardBM from '../Pages/branch_manager/Dashboard4BM'
+import BranchProfile from '../Pages/branch_manager/BranchProfile'
+import PersonnelBranchManagement from '../Pages/branch_manager/PersonalBranchManagement'
+import BranchInventory from '../Pages/branch_manager/BranchInventory'
+import MechanicSideBar from '../layouts/MechanicSideBar'
 // import Dashboard from '../pages/admin/Dashboard'
 
 export default function AppRouter() {
@@ -67,6 +80,28 @@ export default function AppRouter() {
                 <Route element={<GenaralBranchSidebar />}>
                     <Route path='generalManager/employeeProfile' element={<EmployeeProfile />} />
                     <Route path='generalManager/branchManagement' element={<BranchManagement />} />
+                    <Route path='generalManager/itemManagement' element={<ItemManagement />} />
+                    <Route path='generalManager/servicePackageManagement' element={<ServicePackageManagement />} />
+                    <Route path='generalManager/contentManager' element={<ContentManager />} />
+                    <Route path='generalManager/categoryManagement' element={<CategoryManagement />} />
+                    <Route path='generalManager/serviceManagement' element={<ServiceManagement />} />
+                    <Route path='generalManager/personnelManagement' element={<PersonnelManagement />} />
+                    <Route path='generalManager/dashboard' element={<Dashboard />} />
+                </Route>
+
+                <Route element={<BranchManagerSideBar />}>
+                    <Route path='branchManager/dashboard' element={<DashboardBM />} />
+                    <Route path='branchManager/branchProfile' element={<BranchProfile />} />
+                    <Route path='branchManager/employeeProfile' element={<EmployeeProfile />} />
+                    <Route path='branchManager/personnelBranchManagement' element={<PersonnelBranchManagement />} />
+                    <Route path='branchManager/branchInventory' element={<BranchInventory />} />
+                    <Route path='branchManager/appointmentManagement' element={<AppointmentManagement />} />
+                </Route>
+
+                <Route element={<MechanicSideBar />}>
+                    <Route path='mechanic/myShift' element={<AppointmentManagement />} />
+                    <Route path='mechanic/myProfile' element={<EmployeeProfile />} />
+
                 </Route>
             </Routes>
         </BrowserRouter>

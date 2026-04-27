@@ -54,4 +54,43 @@ export const itemApi = {
         })
     },
 
+    //Lấy ra danh sách item cho general branch manager 
+    getItem4GBM: (form) => {
+        return axiosClient.post(`/items/item4GBM`, form, {
+            params: {
+                page: form.page,
+                size: form.size
+            }
+        })
+    },
+
+    //Lấy ra thông tin items kèm với kho của chi nhánh hiện tại
+    getItemForBranch: (form) => {
+        return axiosClient.get(`/inventories/items/branch`, { params: form })
+    },
+
+    //Thêm item mới
+    create: (form) => {
+        return axiosClient.post(`/items`, form)
+    },
+
+    //Update item 
+    update: (id, form) => {
+        return axiosClient.post(`/items/${id}`, form)
+    },
+
+    //Xóa item
+    deleta: (id) => {
+        return axiosClient.delete(`/items/${id}`)
+    },
+
+    //Nhập kho
+    importStock: (form) => {
+        return axiosClient.post(`/inventory_histories/quantity`, form)
+    },
+
+    //Lấy ra danh sách lịch sử kho
+    getStockHistories: (form) => {
+        return axiosClient.get(`/inventory_histories`, { params: form })
+    },
 };

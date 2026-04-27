@@ -12,11 +12,12 @@ import {
     FaLaptopCode,
     FaUsers,
     FaUserGear,
-    FaRightFromBracket
+    FaRightFromBracket,
+
 } from 'react-icons/fa6';
 import { authApi } from '../api/authApi';
 
-const GenaralBranchSidebar = () => {
+const BranchManagerSideBar = () => {
     const navigate = useNavigate();
     // State quản lý trạng thái thu/phóng của sidebar
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -32,15 +33,12 @@ const GenaralBranchSidebar = () => {
 
     // Hệ thống Icon đã được cập nhật lại cho phù hợp với từng nghiệp vụ
     const MENU_ITEMS = [
-        { path: '/generalManager/dashboard', icon: <FaChartPie />, label: 'Dashboard' },
-        { path: '/generalManager/branchManagement', icon: <FaStore />, label: 'Quản lý Cửa hàng' },
-        { path: '/generalManager/serviceManagement', icon: <FaWrench />, label: 'Quản lý Dịch vụ' },
-        { path: '/generalManager/categoryManagement', icon: <FaListUl />, label: 'Quản lý Danh mục' },
-        { path: '/generalManager/itemManagement', icon: <FaBoxOpen />, label: 'Quản lý Sản phẩm' },
-        { path: '/generalManager/servicePackageManagement', icon: <FaCubes />, label: 'Quản lý Gói dịch vụ' },
-        { path: '/generalManager/contentManager', icon: <FaLaptopCode />, label: 'Quản lý Nội dung' },
-        { path: '/generalManager/personnelManagement', icon: <FaUsers />, label: 'Quản lý Nhân sự' },
-        { path: '/generalManager/employeeProfile', icon: <FaUserGear />, label: 'Quản lý Tài khoản' },
+        { path: '/branchManager/dashboard', icon: <FaChartPie />, label: 'Dashboard' },
+        { path: '/branchManager/branchProfile', icon: <FaStore />, label: 'Quản lý Cửa hàng' },
+        { path: '/branchManager/branchInventory', icon: <FaBoxOpen />, label: 'Quản lý Kho hàng' },
+        { path: '/branchManager/personnelBranchManagement', icon: <FaUsers />, label: 'Quản lý Nhân sự' },
+        { path: '/branchManager/appointmentManagement', icon: <FaUsers />, label: 'Quản lý Ca sửa chữa' },
+        { path: '/branchManager/employeeProfile', icon: <FaUserGear />, label: 'Quản lý Tài khoản' },
     ];
 
     return (
@@ -143,4 +141,4 @@ const GenaralBranchSidebar = () => {
     );
 };
 
-export default GenaralBranchSidebar;
+export default BranchManagerSideBar;

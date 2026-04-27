@@ -43,4 +43,11 @@ export const branchApi = {
     deleteBranch: (id) => {
         return axiosClient.delete(`/branches/${id}`)
     },
+
+    //Lấy ra tất cả branch theo dạng list
+    getBranchList: () => {
+        return axiosClient.get(`/branches/branchList`)
+    },
+
+
 }

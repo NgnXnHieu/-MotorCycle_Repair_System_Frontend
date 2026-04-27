@@ -59,7 +59,6 @@ export default function ServicePackagePage() {
             console.log(filterForm)
             const response = await servicePackageApi.getFiltedAll(filterForm);
 
-            // Tương tự trang Phụ tùng, xử lý object Page trả về từ backend
             const data = response.content || response;
             const pageData = response.page || { totalPages: 1, number: 0 };
 
@@ -75,7 +74,6 @@ export default function ServicePackagePage() {
 
     // 3. Xử lý điều hướng & kích hoạt tìm kiếm
     const handleResetSearch = () => {
-        // Chỉ cần set lại page về 0, useEffect sẽ tự động bắt sự thay đổi và gọi API
         setSearchParams({ page: 0 });
         handleSearch()
     };
@@ -85,7 +83,6 @@ export default function ServicePackagePage() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Các hàm handle cập nhật state UI
     const handleDurationToggle = (unitValue) => {
         setSelectedDurationUnits(prev =>
             prev.includes(unitValue) ? prev.filter(item => item !== unitValue) : [...prev, unitValue]
@@ -101,20 +98,28 @@ export default function ServicePackagePage() {
     const maxPercent = ((maxPrice - MIN_BOUNDARY) / (MAX_BOUNDARY - MIN_BOUNDARY)) * 100;
     const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
-    const translateDuration = (value, unit) => {
-        if (unit === 'DAY') return `${value} Ngày`;
-        if (unit === 'MONTH') return `${value} Tháng`;
-        if (unit === 'YEAR') return `${value} Năm`;
-        return `${value} ${unit}`;
-    };
-
     return (
         <div className="min-h-screen bg-gray-50 pb-12 font-sans">
-            {/* HEADER */}
-            <div className="bg-gradient-to-r from-blue-700 to-blue-900 border-b border-gray-200 py-10 mb-8">
-                <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 text-white">
-                    <h1 className="text-3xl font-black mb-2">Các Gói Dịch Vụ & Ưu Đãi</h1>
-                    <p className="text-blue-100 font-medium text-lg">Tiết kiệm hơn - Chăm sóc xe chuyên nghiệp hơn</p>
+
+            {/* ===== PHẦN HERO: ẢNH VÀ CHỮ TRÊN ẢNH ===== */}
+            <div className="relative w-full h-[300px] md:h-[200px] mb-8 overflow-hidden shadow-md">
+                {/* Ảnh nền */}
+                <img
+                    src="https://images.unsplash.com/photo-1549317661-ef355e75fe22?q=80&w=1920&auto=format&fit=crop"
+                    alt="Dịch vụ sửa chữa xe"
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
+                {/* Lớp phủ mờ (Overlay) màu đen trong suốt để làm nổi bật chữ */}
+                <div className="absolute inset-0 bg-black/60"></div>
+
+                {/* Nội dung chữ ở giữa */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
+                    <h1 className="text-4xl md:text-5xl font-black text-white mb-4 drop-shadow-lg tracking-tight">
+                        Các Gói Dịch Vụ & Ưu Đãi
+                    </h1>
+                    <p className="text-lg md:text-xl text-gray-200 font-medium max-w-2xl drop-shadow-md">
+                        Tiết kiệm hơn - Chăm sóc xe chuyên nghiệp hơn. Lựa chọn ngay các gói dịch vụ tốt nhất để bảo vệ xế yêu của bạn.
+                    </p>
                 </div>
             </div>
 
@@ -224,7 +229,6 @@ export default function ServicePackagePage() {
                                                 onClick={() => handleNavigateToDetail(pkg.id)}
                                                 className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col group cursor-pointer hover:border-blue-300"
                                             >
-                                                {/* KHỐI HÌNH ẢNH ĐÃ ĐƯỢC CẬP NHẬT */}
                                                 <div className="h-36 bg-gray-50 flex items-center justify-center border-b border-gray-100 relative overflow-hidden">
                                                     {displayImage ? (
                                                         <img
