@@ -64,6 +64,10 @@ export const itemApi = {
         })
     },
 
+    getItemForStaff: (form) => {
+        return axiosClient.get(`/items/itemForStaff`, { params: form })
+    },
+
     //Lấy ra thông tin items kèm với kho của chi nhánh hiện tại
     getItemForBranch: (form) => {
         return axiosClient.get(`/inventories/items/branch`, { params: form })
