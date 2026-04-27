@@ -54,4 +54,24 @@ export const appointmentApi = {
     updateAcceptToWaiting: (id, form) => {
         return axiosClient.post(`/appointments/acceptedAppointment/${id}`, form)
     },
+
+    //API lấy ra danh sách appointment cùng repairorder, servicedetail cho mechanic
+    getAppointmentMechanic: (form) => {
+        return axiosClient.get(`/appointments/mechanics/appointments`, { params: form })
+    },
+
+    //Lấy ra các statuses cho Mechanic
+    getStatusesMechanic: () => {
+        return axiosClient.get(`/appointments/mechanics/statuses`)
+    },
+
+    //Cập nhật trạng thái cho Mechanic waiting -> fixing
+    updateMechanicToFixing: (id) => {
+        return axiosClient.post(`/appointments/mechanics/appointments/${id}/waitingStatus`)
+    },
+
+    //Cập nhật trạng thái cho Mechanic fixing -> finished
+    updateMechanicToFinished: (id) => {
+        return axiosClient.post(`/appointments/mechanics/appointments/${id}/fixingStatus`)
+    }
 }

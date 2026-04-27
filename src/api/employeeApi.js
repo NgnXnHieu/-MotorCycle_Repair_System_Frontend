@@ -5,7 +5,7 @@ export const employeeApi = {
         return axiosClient.get(`/employee/branch`)
     },
 
-    //Lấy ra thông tin employee cùng branch
+    //Lấy ra thông tin employee của tài khoản hiện tại
     getProfile: () => {
         return axiosClient.get(`/employee/profile`)
     },

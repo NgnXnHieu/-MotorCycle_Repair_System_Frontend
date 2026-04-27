@@ -24,6 +24,8 @@ export default function Login() {
                 navigate('/receptionist/appointmentManagement');
             } else if (role === "ROLE_GENERAL_MANAGER") {
                 navigate('/generalManager/employeeProfile');
+            } else if (role === "ROLE_MECHANIC") {
+                navigate(`/mechanic/myShift`)
             }
 
         } catch (error) {

@@ -876,7 +876,7 @@ const AppointmentManagement = () => {
                                                     <option value="">-- Chọn nhân viên kỹ thuật --</option>
                                                     {employees.map((emp, index) => (
                                                         <option key={`emp-${emp.id}-${index}`} value={emp.id}>
-                                                            {emp.full_name} - {emp.phone}
+                                                            #{emp.id} - {emp.full_name} - {emp.phone}
                                                         </option>
                                                     ))}
                                                 </select>

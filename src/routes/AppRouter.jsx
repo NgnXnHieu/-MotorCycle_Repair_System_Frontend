@@ -36,6 +36,7 @@ import BranchProfile from '../Pages/branch_manager/BranchProfile'
 import PersonnelBranchManagement from '../Pages/branch_manager/PersonalBranchManagement'
 import BranchInventory from '../Pages/branch_manager/BranchInventory'
 import MechanicSideBar from '../layouts/MechanicSideBar'
+import MechanicAppointmentManagement from '../Pages/mechanic/MechanicAppointmentManagement'
 // import Dashboard from '../pages/admin/Dashboard'
 
 export default function AppRouter() {
@@ -99,7 +100,7 @@ export default function AppRouter() {
                 </Route>
 
                 <Route element={<MechanicSideBar />}>
-                    <Route path='mechanic/myShift' element={<AppointmentManagement />} />
+                    <Route path='mechanic/myShift' element={<MechanicAppointmentManagement />} />
                     <Route path='mechanic/myProfile' element={<EmployeeProfile />} />
 
                 </Route>
