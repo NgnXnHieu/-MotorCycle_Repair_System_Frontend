@@ -53,6 +53,20 @@ const EmployeeSidebar = () => {
                 <ul className="flex-1 mt-4 flex flex-col gap-1">
                     <li>
                         <a
+                            href="/receptionist/items"
+                            className="flex items-center px-5 py-3 text-white hover:bg-white/10 transition-colors whitespace-nowrap"
+                        >
+                            <FaFileSignature className="text-xl min-w-[30px]" />
+                            <span
+                                className={`ml-3 transition-opacity duration-300 ${isCollapsed ? 'opacity-0 hidden' : 'opacity-100 block'
+                                    }`}
+                            >
+                                Kho cửa hàng
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a
                             href="/receptionist/walkInBooking"
                             className="flex items-center px-5 py-3 text-white hover:bg-white/10 transition-colors whitespace-nowrap"
                         >

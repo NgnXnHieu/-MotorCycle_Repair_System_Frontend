@@ -17,7 +17,7 @@ import {
 } from 'react-icons/fa6';
 import { authApi } from '../api/authApi';
 
-const MechanicSideBar = () => {
+const ReceptionistSidebar = () => {
     const navigate = useNavigate();
     // State quản lý trạng thái thu/phóng của sidebar
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -33,11 +33,10 @@ const MechanicSideBar = () => {
 
     // Hệ thống Icon đã được cập nhật lại cho phù hợp với từng nghiệp vụ
     const MENU_ITEMS = [
-        { path: '/mechanic/items', icon: <FaChartPie />, label: 'Ca sửa' },
-        { path: '/mechanic/myShift', icon: <FaChartPie />, label: 'Ca sửa' },
-        // { path: '/mechanic/mechanicAppointmentManagement', icon: <FaUserGear />, label: 'Quản lý Tài khoản' },
-        { path: '/mechanic/myProfile', icon: <FaUserGear />, label: 'Quản lý Tài khoản' },
-
+        { path: '/receptionist/items', icon: <FaChartPie />, label: 'Kho cửa hàng' },
+        { path: '/receptionist/walkInBooking', icon: <FaStore />, label: 'Tạo phiếu sửa' },
+        { path: '/receptionist/appointmentManagement', icon: <FaBoxOpen />, label: 'Quản lý ca sửa' },
+        { path: '/receptionist/employeeProfile', icon: <FaUsers />, label: 'Quản lý tài khoản' }
     ];
 
     return (
@@ -57,10 +56,10 @@ const MechanicSideBar = () => {
                             }`}
                     >
                         <span className="text-white font-bold text-sm tracking-wider whitespace-nowrap">
-                            MECHANIC
+                            HỆ THỐNG
                         </span>
                         <span className="text-slate-400 text-xs whitespace-nowrap">
-                            Giao diện Thợ sửa
+                            General Manager
                         </span>
                     </div>
                 </div>
@@ -140,4 +139,4 @@ const MechanicSideBar = () => {
     );
 };
 
-export default MechanicSideBar;
+export default ReceptionistSidebar;

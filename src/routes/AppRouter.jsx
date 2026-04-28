@@ -37,6 +37,10 @@ import PersonnelBranchManagement from '../Pages/branch_manager/PersonalBranchMan
 import BranchInventory from '../Pages/branch_manager/BranchInventory'
 import MechanicSideBar from '../layouts/MechanicSideBar'
 import MechanicAppointmentManagement from '../Pages/mechanic/MechanicAppointmentManagement'
+import BranchDetail from '../Pages/general_manager/BranchDetail'
+import BranchCreate from '../Pages/general_manager/BranchCreate'
+import StaffItemManagement from '../Pages/receptionist/StaffItemManagement'
+import ReceptionistSidebar from '../layouts/ReceptionistSidebar'
 // import Dashboard from '../pages/admin/Dashboard'
 
 export default function AppRouter() {
@@ -70,11 +74,12 @@ export default function AppRouter() {
                 </Route>
 
                 {/* Giao diện bên nhân viên tư vấn (Receptionist)  */}
-                <Route element={<EmployeeSidebar />}>
+                <Route element={<ReceptionistSidebar />}>
                     <Route path="receptionist/sparePartsPage" element={<SparePartsPage />} />
                     <Route path="receptionist/appointmentManagement" element={<AppointmentManagement />} />
                     <Route path="receptionist/walkInBooking" element={<WalkInBooking />} />
                     <Route path="receptionist/employeeProfile" element={<EmployeeProfile />} />
+                    <Route path="receptionist/items" element={<StaffItemManagement />} />
 
                 </Route>
 
@@ -88,6 +93,8 @@ export default function AppRouter() {
                     <Route path='generalManager/serviceManagement' element={<ServiceManagement />} />
                     <Route path='generalManager/personnelManagement' element={<PersonnelManagement />} />
                     <Route path='generalManager/dashboard' element={<Dashboard />} />
+                    <Route path="generalManager/branchManagement/:id" element={<BranchDetail />} />
+                    <Route path="generalManager/branchManagement/create" element={<BranchCreate />} />
                 </Route>
 
                 <Route element={<BranchManagerSideBar />}>
@@ -102,7 +109,7 @@ export default function AppRouter() {
                 <Route element={<MechanicSideBar />}>
                     <Route path='mechanic/myShift' element={<MechanicAppointmentManagement />} />
                     <Route path='mechanic/myProfile' element={<EmployeeProfile />} />
-
+                    <Route path="mechanic/items" element={<StaffItemManagement />} />
                 </Route>
             </Routes>
         </BrowserRouter>
