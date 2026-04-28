@@ -34,9 +34,14 @@ axiosClient.interceptors.response.use(
         // Nếu lỗi 401 (Unauthorized) và request này chưa từng được retry
         if (error.response && error.response.status === 401 && !originalRequest._retry) {
 
-            // SỬ DỤNG .includes() ĐỂ AN TOÀN HƠN (Đề phòng trường hợp URL bị thay đổi đôi chút)
-            if (originalRequest.url.includes('/refreshToken') || originalRequest.url.includes('/login')) {
-                console.log("Refresh token thất bại hoặc chưa đăng nhập. Về trang Login...");
+            // 1. NẾU LÀ LỖI TỪ API ĐĂNG NHẬP: KHÔNG LÀM GÌ CẢ (Chỉ trả lỗi về cho màn hình Login.jsx xử lý)
+            if (originalRequest.url.includes('/login')) {
+                return Promise.reject(error);
+            }
+
+            // 2. NẾU LÀ LỖI TỪ API REFRESH TOKEN (Nghĩa là token hết hạn không thể cứu vãn): Đá về trang Login
+            if (originalRequest.url.includes('/refreshToken')) {
+                console.log("Refresh token thất bại (hết hạn). Về trang Login...");
                 window.location.href = '/login';
                 return Promise.reject(error);
             }
@@ -47,9 +52,6 @@ axiosClient.interceptors.response.use(
                 return new Promise(function (resolve, reject) {
                     failedQueue.push({ resolve, reject });
                 }).then((token) => {
-                    // Nếu bạn dùng Header Bearer token, bạn sẽ set ở đây:
-                    // if (token) { originalRequest.headers['Authorization'] = 'Bearer ' + token; }
-
                     // Khi hàng đợi được thả, gọi lại request gốc
                     return axiosClient(originalRequest);
                 }).catch(err => {
@@ -62,22 +64,20 @@ axiosClient.interceptors.response.use(
             isRefreshing = true;
 
             try {
-                // Gọi API cấp lại token từ file authApi (ĐÃ ĐƯỢC FIX SỬ DỤNG AXIOS GỐC)
+                // Gọi API cấp lại token từ file authApi
                 const res = await authApi.refreshToken();
                 console.log("Refresh Token thành công!");
 
-                // NẾU BẠN CÓ TRẢ VỀ TOKEN TỪ BODY: const newToken = res.data.accessToken;
-                // NẾU BẠN CHỈ DÙNG COOKIE, CÓ THỂ BỎ QUA BIẾN NÀY
                 const newToken = null;
 
-                // Refresh thành công: Báo cho hàng đợi tiếp tục chạy và truyền token mới vào
+                // Refresh thành công: Báo cho hàng đợi tiếp tục chạy
                 processQueue(null, newToken);
 
                 // Gọi lại request ban đầu vừa bị fail
                 return axiosClient(originalRequest);
 
             } catch (refreshError) {
-                // Refresh thất bại (VD: Cookie Refresh Token hết hạn 30 ngày)
+                // Refresh thất bại
                 processQueue(refreshError, null);
                 console.log("Phiên đăng nhập hết hạn hoàn toàn. Vui lòng đăng nhập lại.");
 

@@ -87,7 +87,7 @@ export default function ItemDetailPage() {
                 await itemApi.addToFavouriteList(item.id);
             }
         } catch (error) {
-            console.error("Lỗi khi cập nhật yêu thích:", error);
+            console.error("Lỗi khi cập nhật yêu thích:", error?.response);
             setItem(previousState);
         }
     };
