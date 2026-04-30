@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Eye, ShieldCheck, Clock, Repeat, SlidersHorizontal } from 'lucide-react';
+import { Search, Filter, ShieldCheck, Clock, Repeat, SlidersHorizontal, ChevronRight } from 'lucide-react';
 import { servicePackageApi } from '../../api/servicePackageApi';
 import { getErrorMessage } from '../../utils/errorHandler';
 import Pagination from '../../components/common/Pagination';
@@ -28,7 +28,6 @@ export default function ServicePackagePage() {
     const [currentPage, setCurrentPage] = useState(pageFromUrl);
     const [totalPages, setTotalPages] = useState(0);
 
-    // Tăng PAGE_SIZE lên 10 để khi dàn 5 cột sẽ được 2 hàng chẵn
     const PAGE_SIZE = 20;
 
     const durationUnits = [
@@ -99,64 +98,63 @@ export default function ServicePackagePage() {
     const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-12 font-sans">
-
-            {/* ===== PHẦN HERO: ẢNH VÀ CHỮ TRÊN ẢNH ===== */}
-            <div className="relative w-full h-[300px] md:h-[200px] mb-8 overflow-hidden shadow-md">
-                {/* Ảnh nền */}
+        <div className="min-h-screen bg-zinc-50 pb-12 font-sans text-zinc-900">
+            {/* HER0 SECTION */}
+            <div className="relative w-full h-[320px] md:h-[400px] mb-10 overflow-hidden">
                 <img
                     src="https://images.unsplash.com/photo-1549317661-ef355e75fe22?q=80&w=1920&auto=format&fit=crop"
                     alt="Dịch vụ sửa chữa xe"
                     className="absolute inset-0 w-full h-full object-cover"
                 />
-                {/* Lớp phủ mờ (Overlay) màu đen trong suốt để làm nổi bật chữ */}
-                <div className="absolute inset-0 bg-black/60"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-zinc-900/95 via-zinc-900/80 to-zinc-900/30"></div>
 
-                {/* Nội dung chữ ở giữa */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
-                    <h1 className="text-4xl md:text-5xl font-black text-white mb-4 drop-shadow-lg tracking-tight">
-                        Các Gói Dịch Vụ & Ưu Đãi
+                <div className="absolute inset-0 flex flex-col items-start justify-center px-6 md:px-16 lg:px-24 max-w-[1440px] mx-auto z-10">
+                    <span className="text-amber-500 font-bold tracking-[0.2em] uppercase text-xs mb-4 drop-shadow-sm border-l-2 border-amber-500 pl-3">Dịch Vụ Cao Cấp</span>
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 drop-shadow-md tracking-tight max-w-2xl leading-tight">
+                        Chăm sóc xe <br /> chuyên nghiệp
                     </h1>
-                    <p className="text-lg md:text-xl text-gray-200 font-medium max-w-2xl drop-shadow-md">
-                        Tiết kiệm hơn - Chăm sóc xe chuyên nghiệp hơn. Lựa chọn ngay các gói dịch vụ tốt nhất để bảo vệ xế yêu của bạn.
+                    <p className="text-base md:text-lg text-zinc-300 font-light max-w-xl drop-shadow-sm leading-relaxed">
+                        Nâng tầm trải nghiệm bảo dưỡng xe với các gói dịch vụ cao cấp. Đảm bảo hiệu suất tối đa và độ bền bỉ vượt thời gian.
                     </p>
                 </div>
             </div>
 
             <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex flex-col lg:flex-row gap-6 xl:gap-8">
-
-                    {/* --- SIDEBAR BỘ LỌC --- */}
+                <div className="flex flex-col lg:flex-row gap-8">
+                    {/* SIDEBAR BỘ LỌC */}
                     <div className="flex flex-col gap-4 flex-shrink-0 z-10">
                         <button
                             onClick={() => setIsFilterOpen(!isFilterOpen)}
-                            className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-bold transition-all shadow-sm border self-start w-full lg:w-auto bg-white border-gray-200 text-gray-700 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200"
+                            className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-medium transition-all shadow-sm border self-start w-full lg:w-auto bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900"
                         >
-                            <SlidersHorizontal size={20} className={isFilterOpen ? "text-blue-600" : "text-gray-500"} />
+                            <SlidersHorizontal size={18} className={isFilterOpen ? "text-zinc-900" : "text-zinc-500"} />
+                            <span className="text-sm">Bộ lọc tìm kiếm</span>
                         </button>
 
-                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isFilterOpen ? 'w-full lg:w-[260px] xl:w-[280px] opacity-100 max-h-[2000px]' : 'lg:w-0 max-h-0 lg:max-h-[2000px] opacity-0 m-0'}`}>
-                            <div className="w-full lg:w-[260px] xl:w-[280px]">
-                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 sticky top-6">
-                                    <div className="flex items-center gap-2 mb-5 border-b border-gray-100 pb-3">
-                                        <Filter className="text-blue-600" size={18} />
-                                        <h2 className="text-base font-bold text-gray-800">Cài đặt tìm kiếm</h2>
+                        <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isFilterOpen ? 'w-full lg:w-[280px] opacity-100 max-h-[2000px]' : 'lg:w-0 max-h-0 lg:max-h-[2000px] opacity-0 m-0'}`}>
+                            <div className="w-full lg:w-[280px]">
+                                <div className="bg-white p-6 rounded-xl shadow-sm border border-zinc-200 sticky top-6">
+                                    <div className="flex items-center gap-3 mb-6 border-b border-zinc-100 pb-4">
+                                        <Filter className="text-zinc-900" size={18} />
+                                        <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wide">Lọc Dịch Vụ</h2>
                                     </div>
 
                                     {/* Thời hạn gói */}
-                                    <div className="mb-5">
-                                        <h3 className="font-semibold text-gray-900 mb-3 text-xs uppercase tracking-wider">Thời hạn gói</h3>
-                                        <ul className="space-y-2">
+                                    <div className="mb-8">
+                                        <h3 className="font-semibold text-zinc-400 mb-4 text-[11px] uppercase tracking-widest">Thời hạn gói</h3>
+                                        <ul className="space-y-3">
                                             {durationUnits.map((unit) => (
                                                 <li key={unit.value}>
                                                     <label className="flex items-center gap-3 cursor-pointer group">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={selectedDurationUnits.includes(unit.value)}
-                                                            onChange={() => handleDurationToggle(unit.value)}
-                                                            className="w-4 h-4 text-blue-600 rounded border-gray-300"
-                                                        />
-                                                        <span className="text-gray-600 group-hover:text-blue-600 font-medium text-sm">{unit.label}</span>
+                                                        <div className="relative flex items-center justify-center">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={selectedDurationUnits.includes(unit.value)}
+                                                                onChange={() => handleDurationToggle(unit.value)}
+                                                                className="w-4 h-4 text-zinc-900 rounded-[4px] border-zinc-300 focus:ring-zinc-900 focus:ring-offset-0"
+                                                            />
+                                                        </div>
+                                                        <span className="text-zinc-600 group-hover:text-zinc-900 transition-colors font-medium text-sm">{unit.label}</span>
                                                     </label>
                                                 </li>
                                             ))}
@@ -164,23 +162,23 @@ export default function ServicePackagePage() {
                                     </div>
 
                                     {/* Khoảng giá */}
-                                    <div className="pt-5 border-t border-gray-100">
-                                        <h3 className="font-semibold text-gray-900 mb-5 text-xs uppercase tracking-wider">Khoảng giá</h3>
-                                        <div className="relative h-1.5 bg-gray-200 rounded-lg">
-                                            <div className="absolute h-full bg-blue-600 rounded-lg z-10" style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }}></div>
-                                            <input type="range" min={MIN_BOUNDARY} max={MAX_BOUNDARY} step={STEP} value={minPrice} onChange={handleMinChange} className="absolute w-full -top-1.5 h-4 appearance-none bg-transparent pointer-events-none z-20 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-600 [&::-webkit-slider-thumb]:rounded-full" />
-                                            <input type="range" min={MIN_BOUNDARY} max={MAX_BOUNDARY} step={STEP} value={maxPrice} onChange={handleMaxChange} className="absolute w-full -top-1.5 h-4 appearance-none bg-transparent pointer-events-none z-20 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-blue-600 [&::-webkit-slider-thumb]:rounded-full" />
+                                    <div className="pt-6 border-t border-zinc-100">
+                                        <h3 className="font-semibold text-zinc-400 mb-6 text-[11px] uppercase tracking-widest">Khoảng giá (VNĐ)</h3>
+                                        <div className="relative h-1 bg-zinc-100 rounded-full">
+                                            <div className="absolute h-full bg-zinc-900 rounded-full z-10" style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }}></div>
+                                            <input type="range" min={MIN_BOUNDARY} max={MAX_BOUNDARY} step={STEP} value={minPrice} onChange={handleMinChange} className="absolute w-full -top-1.5 h-4 appearance-none bg-transparent pointer-events-none z-20 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-[2.5px] [&::-webkit-slider-thumb]:border-zinc-900 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-grab" />
+                                            <input type="range" min={MIN_BOUNDARY} max={MAX_BOUNDARY} step={STEP} value={maxPrice} onChange={handleMaxChange} className="absolute w-full -top-1.5 h-4 appearance-none bg-transparent pointer-events-none z-20 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-[2.5px] [&::-webkit-slider-thumb]:border-zinc-900 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-grab" />
                                         </div>
-                                        <div className="flex justify-between items-center mt-5 text-xs font-bold text-gray-700">
-                                            <div className="bg-gray-50 border border-gray-200 px-2 py-1.5 rounded-md text-center w-[45%] truncate">{formatPrice(minPrice)}</div>
-                                            <span className="text-gray-300">-</span>
-                                            <div className="bg-gray-50 border border-gray-200 px-2 py-1.5 rounded-md text-center w-[45%] truncate">{formatPrice(maxPrice)}</div>
+                                        <div className="flex justify-between items-center mt-6 text-xs font-semibold text-zinc-900">
+                                            <div className="bg-zinc-50 border border-zinc-200 px-3 py-2 rounded-lg text-center w-[45%] truncate">{formatPrice(minPrice)}</div>
+                                            <span className="text-zinc-300">-</span>
+                                            <div className="bg-zinc-50 border border-zinc-200 px-3 py-2 rounded-lg text-center w-[45%] truncate">{formatPrice(maxPrice)}</div>
                                         </div>
                                         <button
                                             onClick={handleResetSearch}
-                                            className="w-full mt-5 bg-blue-50 text-blue-600 font-bold py-2.5 rounded-xl hover:bg-blue-100 transition-colors border border-blue-100 text-sm"
+                                            className="w-full mt-8 bg-zinc-900 text-white font-semibold py-3 rounded-lg hover:bg-zinc-800 transition-colors shadow-sm text-xs tracking-wider uppercase"
                                         >
-                                            Áp dụng
+                                            Áp Dụng
                                         </button>
                                     </div>
                                 </div>
@@ -188,82 +186,90 @@ export default function ServicePackagePage() {
                         </div>
                     </div>
 
-                    {/* --- VÙNG NỘI DUNG CHÍNH --- */}
+                    {/* VÙNG NỘI DUNG CHÍNH */}
                     <div className="flex-1 transition-all duration-300 min-w-0 flex flex-col">
-
                         {/* Thanh công cụ Tìm kiếm */}
-                        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                        <div className="flex flex-col sm:flex-row gap-4 mb-8">
                             <div className="relative flex-1">
                                 <input
                                     type="text"
                                     value={searchName}
                                     onChange={(e) => setSearchName(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleResetSearch()}
-                                    placeholder="Nhập tên gói dịch vụ bạn muốn tìm..."
-                                    className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-gray-200 shadow-sm focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
+                                    placeholder="Tìm kiếm dịch vụ..."
+                                    className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-zinc-200 shadow-sm focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 outline-none text-sm transition-all bg-white"
                                 />
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
                             </div>
 
                             <button
                                 onClick={handleResetSearch}
-                                className="hidden sm:block bg-blue-600 text-white px-6 py-3.5 rounded-2xl font-bold hover:bg-blue-700 transition-colors flex-shrink-0 text-sm"
+                                className="hidden sm:flex items-center justify-center gap-2 bg-zinc-900 text-white px-8 py-3.5 rounded-xl font-medium hover:bg-zinc-800 transition-colors shadow-sm text-sm"
                             >
-                                Tìm kiếm
+                                <Search size={16} />
+                                <span>Tìm Kiếm</span>
                             </button>
                         </div>
 
                         {/* LƯỚI HIỂN THỊ GÓI DỊCH VỤ */}
                         {packages.length === 0 ? (
-                            <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
-                                <p className="text-gray-500 font-medium text-sm">Không tìm thấy gói dịch vụ nào phù hợp.</p>
+                            <div className="flex flex-col items-center justify-center py-24 bg-white rounded-xl border border-zinc-200 shadow-sm">
+                                <Search className="text-zinc-300 mb-4" size={48} />
+                                <p className="text-zinc-500 font-medium text-sm">Không tìm thấy gói dịch vụ nào phù hợp.</p>
                             </div>
                         ) : (
                             <>
-                                <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 ${isFilterOpen ? 'lg:grid-cols-3 xl:grid-cols-4' : 'lg:grid-cols-4 xl:grid-cols-5'} gap-4 transition-all duration-300`}>
+                                <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 ${isFilterOpen ? 'xl:grid-cols-3' : 'xl:grid-cols-4'} gap-6 transition-all duration-300`}>
                                     {packages.map((pkg) => {
                                         const displayImage = pkg.imageUrl || pkg.image;
 
                                         return (
                                             <div key={pkg.id}
                                                 onClick={() => handleNavigateToDetail(pkg.id)}
-                                                className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col group cursor-pointer hover:border-blue-300"
+                                                className="bg-white rounded-xl border border-zinc-200 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col group cursor-pointer hover:-translate-y-1"
                                             >
-                                                <div className="h-36 bg-gray-50 flex items-center justify-center border-b border-gray-100 relative overflow-hidden">
+                                                <div className="h-48 bg-zinc-100 flex items-center justify-center border-b border-zinc-100 relative overflow-hidden">
                                                     {displayImage ? (
                                                         <img
                                                             src={displayImage}
                                                             alt={pkg.name}
-                                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 z-10 relative"
+                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 z-10 relative"
                                                         />
                                                     ) : (
-                                                        <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center relative">
-                                                            <ShieldCheck size={40} className="text-blue-500/80 group-hover:scale-110 transition-transform duration-500 z-10" />
-                                                            <div className="absolute -right-4 -top-4 w-16 h-16 bg-blue-600/5 rounded-full blur-xl"></div>
-                                                            <div className="absolute -left-4 -bottom-4 w-20 h-20 bg-indigo-600/5 rounded-full blur-xl"></div>
+                                                        <div className="w-full h-full bg-zinc-900 flex items-center justify-center relative overflow-hidden">
+                                                            <ShieldCheck size={48} className="text-zinc-700 group-hover:scale-110 group-hover:text-amber-500 transition-all duration-500 z-10" />
+                                                            <div className="absolute -right-8 -top-8 w-32 h-32 bg-zinc-800/50 rounded-full blur-2xl"></div>
+                                                            <div className="absolute -left-8 -bottom-8 w-32 h-32 bg-zinc-800/50 rounded-full blur-2xl"></div>
                                                         </div>
                                                     )}
+                                                    {/* Badge */}
+                                                    {/* <div className="absolute top-4 right-4 bg-zinc-900/95 backdrop-blur-sm text-amber-500 text-[10px] font-bold px-3 py-1.5 rounded-sm uppercase tracking-widest z-20 shadow-sm">
+                                                        Premium
+                                                    </div> */}
                                                 </div>
 
-                                                <div className="p-4 flex flex-col flex-1">
-                                                    <h3 className="text-base font-bold text-gray-900 leading-tight mb-1.5 group-hover:text-blue-700 transition-colors line-clamp-2">{pkg.name}</h3>
-                                                    <p className="text-xs text-gray-500 mb-4 line-clamp-2 leading-relaxed">{pkg.description}</p>
+                                                <div className="p-5 flex flex-col flex-1">
+                                                    <h3 className="text-lg font-bold text-zinc-900 leading-snug mb-2 group-hover:text-amber-600 transition-colors line-clamp-2">{pkg.name}</h3>
+                                                    <p className="text-sm text-zinc-500 mb-6 line-clamp-2 leading-relaxed font-light">{pkg.description || "Gói dịch vụ bảo dưỡng cao cấp giúp tối ưu hiệu suất và duy trì độ bền cho xế yêu."}</p>
 
-                                                    <div className="mt-auto grid grid-cols-2 gap-2 mb-4">
-                                                        <div className="flex items-center gap-1 text-[11px] font-semibold text-gray-700 bg-gray-50 px-2 py-1 rounded-md truncate">
-                                                            <Clock size={12} className="text-blue-500 flex-shrink-0" />
-                                                            <span className="truncate">{pkg.duration}</span>
+                                                    <div className="mt-auto grid grid-cols-2 gap-3 mb-6">
+                                                        <div className="flex items-center gap-2 text-xs font-medium text-zinc-600 bg-zinc-50 border border-zinc-100 px-3 py-2.5 rounded-lg">
+                                                            <Clock size={14} className="text-zinc-400 flex-shrink-0" />
+                                                            <span className="truncate">{pkg.duration || 'N/A'}</span>
                                                         </div>
-                                                        <div className="flex items-center gap-1 text-[11px] font-semibold text-gray-700 bg-gray-50 px-2 py-1 rounded-md truncate">
-                                                            <Repeat size={12} className="text-green-500 flex-shrink-0" />
-                                                            <span className="truncate">{pkg.usageTimes} Lần</span>
+                                                        <div className="flex items-center gap-2 text-xs font-medium text-zinc-600 bg-zinc-50 border border-zinc-100 px-3 py-2.5 rounded-lg">
+                                                            <Repeat size={14} className="text-zinc-400 flex-shrink-0" />
+                                                            <span className="truncate">{pkg.usageTimes || 0} Lần</span>
                                                         </div>
                                                     </div>
 
-                                                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                                                        <span className="text-lg font-black text-red-600">{formatPrice(pkg.price)}</span>
-                                                        <button className="bg-blue-50 text-blue-700 font-bold px-2.5 py-1.5 rounded-lg text-[11px] flex items-center gap-1 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                                            <Eye size={12} /> Chi tiết
+                                                    <div className="flex items-end justify-between pt-5 border-t border-zinc-100">
+                                                        <div>
+                                                            <p className="text-[10px] text-zinc-400 uppercase tracking-widest mb-1.5 font-medium">Giá trọn gói</p>
+                                                            <span className="text-xl font-bold text-red-600">{formatPrice(pkg.price)}</span>
+                                                        </div>
+                                                        <button className="bg-white border border-zinc-200 text-zinc-900 p-2.5 rounded-lg group-hover:bg-zinc-900 group-hover:border-zinc-900 group-hover:text-white transition-all shadow-sm">
+                                                            <ChevronRight size={18} />
                                                         </button>
                                                     </div>
                                                 </div>
@@ -272,7 +278,7 @@ export default function ServicePackagePage() {
                                     })}
                                 </div>
 
-                                <div className="mt-6">
+                                <div className="mt-12 flex justify-center">
                                     <Pagination
                                         currentPage={currentPage}
                                         totalPages={totalPages}

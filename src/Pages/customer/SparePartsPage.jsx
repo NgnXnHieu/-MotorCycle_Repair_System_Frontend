@@ -286,7 +286,7 @@ export default function SparePartsPage() {
                                                     <div className="mt-auto pt-4 flex items-center justify-between border-t border-gray-50">
                                                         <div className="flex flex-col">
                                                             <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Giá bán lẻ</span>
-                                                            <span className={`text-xl font-black ${isOutOfStock ? 'text-gray-400' : 'text-blue-600'}`}>
+                                                            <span className={`text-xl font-black ${isOutOfStock ? 'text-red-400' : 'text-red-600'}`}>
                                                                 {formatPrice(product.price)}
                                                             </span>
                                                         </div>

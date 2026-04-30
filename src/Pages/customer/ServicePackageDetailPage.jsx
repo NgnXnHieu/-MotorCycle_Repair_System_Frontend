@@ -102,10 +102,16 @@ export default function ServicePackageDetailPage() {
 
             <div className="max-w-6xl mx-auto px-4 space-y-8">
 
-                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col md:flex-row">
-                    {/* CỘT TRÁI: HÌNH ẢNH GÓI DỊCH VỤ (ĐÃ CẬP NHẬT) */}
-                    <div className="md:w-5/12 bg-gray-100 p-8 flex items-center justify-center relative border-b md:border-b-0 md:border-r border-gray-100">
-                        <div className="absolute top-6 left-6 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg text-xs font-black text-blue-700 shadow-sm border border-gray-200 flex items-center gap-1.5 z-10">
+                <div className="bg-white rounded-[2rem] shadow-md border border-slate-200 overflow-hidden flex flex-col md:flex-row">
+
+                    {/* CỘT TRÁI: ẢNH TRÀN VIỀN (ĐÃ XÓA PADDING VÀ BỎ KHUNG BO GÓC DƯ THỪA) */}
+                    {/* 1. Xóa p-8
+        2. Thêm min-h-[300px] để trên Mobile ảnh không bị bẹp
+        3. Thêm shrink-0 để cột này không bị co lại khi chữ bên cột phải quá dài */}
+                    <div className="md:w-5/12 relative bg-slate-100 flex-shrink-0 border-b md:border-b-0 md:border-r border-slate-100 min-h-[300px] md:min-h-full">
+
+                        {/* Tag nổi trên ảnh */}
+                        <div className="absolute top-6 left-6 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs font-black text-indigo-700 shadow-md border border-white/50 flex items-center gap-1.5 z-20">
                             <Tag size={14} /> GÓI DỊCH VỤ
                         </div>
 
@@ -113,15 +119,17 @@ export default function ServicePackageDetailPage() {
                             <img
                                 src={displayImage}
                                 alt={servicePackage.name}
-                                // Dùng object-cover để ảnh phủ kín đẹp mắt, hoặc object-contain nếu ảnh là logo/icon
-                                className="w-full max-w-sm h-auto object-cover rounded-2xl shadow-md transition-transform duration-500 hover:scale-105"
+                                // Đặt absolute inset-0 để ảnh phủ kín 100% không gian của cột trái
+                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-105 z-10"
                             />
                         ) : (
-                            // Fallback UI nếu không có ảnh
-                            <div className="w-48 h-48 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-300">
-                                <ShieldCheck size={80} />
+                            <div className="absolute inset-0 flex items-center justify-center bg-slate-50 text-slate-300">
+                                <ShieldCheck size={80} strokeWidth={1.5} />
                             </div>
                         )}
+
+                        {/* Hiệu ứng Gradient mờ dưới đáy để tăng độ sâu */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent z-15 pointer-events-none"></div>
                     </div>
 
                     {/* CỘT PHẢI: THÔNG TIN MUA HÀNG */}
@@ -151,7 +159,7 @@ export default function ServicePackageDetailPage() {
                         <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100 mb-8 space-y-3">
                             <div className="flex justify-between items-center">
                                 <span className="text-gray-500 font-semibold">Giá đăng ký gói:</span>
-                                <span className="text-3xl font-black text-blue-700">
+                                <span className="text-3xl font-black text-red-600">
                                     {formatPrice(servicePackage.price)}
                                 </span>
                             </div>
@@ -234,7 +242,7 @@ export default function ServicePackageDetailPage() {
                                         </h3>
                                         <p className="text-xs text-gray-500 mb-3">{pkg.usageTimes} lần • {pkg.duration}</p>
                                         <div className="mt-auto flex items-center justify-between">
-                                            <span className="font-black text-blue-700">{formatPrice(pkg.price)}</span>
+                                            <span className="font-black text-red-600">{formatPrice(pkg.price)}</span>
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
