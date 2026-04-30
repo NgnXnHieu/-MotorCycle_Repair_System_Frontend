@@ -19,8 +19,8 @@ const BannerFrame = ({ img1, img2, caption, link }) => {
     return (
         <div
             onClick={() => navigate(link || '/')}
-            // Đã XÓA rounded-2xl để ảnh vuông vức góc cạnh
-            className="relative w-full h-40 md:h-56 overflow-hidden cursor-pointer group shadow-md"
+            // [ĐÃ SỬA] Đổi h-40 thành h-56, md:h-56 thành md:h-[300px] để cao hơn 1/3
+            className="relative w-full h-56 md:h-[300px] overflow-hidden cursor-pointer group shadow-md"
         >
             {/* LỚP ẢNH */}
             <img
@@ -37,7 +37,7 @@ const BannerFrame = ({ img1, img2, caption, link }) => {
             {/* LỚP PHỦ ĐEN */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
 
-            {/* CHÚ THÍCH GÓC DƯỚI (Đã xóa rounded-full để tạo thành hình khối vuông vắn) */}
+            {/* CHÚ THÍCH GÓC DƯỚI */}
             <div className="absolute bottom-4 right-4 flex items-center gap-2 text-white text-sm md:text-base font-semibold bg-black/40 backdrop-blur-md px-5 py-2 border border-white/20 transition-colors duration-300 group-hover:bg-blue-600 group-hover:border-blue-400">
                 <span>{caption || 'Khám phá ngay'}</span>
                 <ArrowRight className="h-4 w-4" />
@@ -50,8 +50,6 @@ export default function AnimatedBanners({ contentData }) {
     if (!contentData) return null;
 
     return (
-        // Đã XÓA max-w-7xl và px-4 sm:px-6 để chiều rộng tràn viền (w-full) bằng với Hero
-        // Căn chỉnh margin-top (mt-6) để cách Hero một khoảng trống đẹp mắt
         <section className="w-full mt-6 mb-8 relative z-30">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <BannerFrame
