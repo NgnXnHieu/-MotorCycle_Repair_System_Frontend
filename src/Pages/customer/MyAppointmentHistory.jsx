@@ -74,7 +74,7 @@ export default function MyAppointmentHistory() {
                 setTotalPages(0);
             }
         } catch (error) {
-            console.error("Lỗi khi fetch lịch sử sửa chữa: ", error);
+            console.error("Lỗi khi fetch lịch sử sửa chữa: ", error?.response);
             setAppointments([]);
             setTotalPages(0);
         } finally {

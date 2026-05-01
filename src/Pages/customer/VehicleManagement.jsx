@@ -195,7 +195,7 @@ export default function VehicleManagement() {
                     </div>
 
                     <button
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={() => navigate('/vehicleManagement/addVehiclePage')} // Điều hướng sang route mới
                         className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors shadow-md hover:shadow-lg w-full sm:w-auto justify-center"
                     >
                         <Plus size={20} strokeWidth={2.5} />
@@ -250,10 +250,12 @@ export default function VehicleManagement() {
                                     </div>
                                     <button
                                         onClick={(e) => {
-                                            e.stopPropagation(); // <--- RẤT QUAN TRỌNG: Ngăn không cho sự kiện click lan ra thẻ div cha
-                                            setEditingVehicle(vehicle);
+                                            e.stopPropagation();
+                                            // Điều hướng sang trang edit kèm theo ID của xe
+                                            navigate(`/vehicleManagement/edit/${vehicle.id}`);
                                         }}
-                                        className=" cursor-pointer mt-auto w-full flex items-center justify-center gap-2 bg-gray-50 hover:bg-blue-500 text-gray-700 hover:text-white-600 border border-gray-200 hover:border-blue-200 font-semibold py-2.5 rounded-lg transition-colors">
+                                        className="cursor-pointer mt-auto w-full flex items-center justify-center gap-2 bg-gray-50 hover:bg-blue-500 text-gray-700 hover:text-white border border-gray-200 hover:border-blue-200 font-semibold py-2.5 rounded-lg transition-colors"
+                                    >
                                         <Edit size={16} />
                                         Cập nhật thông tin
                                     </button>

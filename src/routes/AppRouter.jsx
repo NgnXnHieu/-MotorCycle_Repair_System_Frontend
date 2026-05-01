@@ -41,6 +41,9 @@ import BranchDetail from '../Pages/general_manager/BranchDetail'
 import BranchCreate from '../Pages/general_manager/BranchCreate'
 import StaffItemManagement from '../Pages/receptionist/StaffItemManagement'
 import ReceptionistSidebar from '../layouts/ReceptionistSidebar'
+import AddVehicleModal from '../components/common/VehicleManagement/AddVehicleModal'
+import AddVehiclePage from '../Pages/customer/AddVehiclePage'
+import EditVehiclePage from '../Pages/customer/EditVehiclePage'
 // import Dashboard from '../pages/admin/Dashboard'
 
 export default function AppRouter() {
@@ -65,6 +68,8 @@ export default function AppRouter() {
                     <Route path="/servicePage" element={<ServicePage />} />
                     <Route path="/favouritePage" element={<FavouritePage />} />
                     <Route path="/emergencyBooking" element={<EmergencyBooking />} />
+                    <Route path="vehicleManagement/addVehiclePage" element={<AddVehiclePage />} />
+                    <Route path="vehicleManagement/edit/:id" element={<EditVehiclePage />} />
                 </Route>
 
                 {/* Nhóm 2: Các trang dùng Staff Layout (Có Sidebar bên trái) */}
