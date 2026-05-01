@@ -1,4 +1,13 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import {
+    createBrowserRouter,
+    createRoutesFromElements,
+    RouterProvider,
+    Route,
+    Outlet,
+    ScrollRestoration
+} from 'react-router-dom';
+
+// Import Pages & Layouts
 import Home from "../Pages/public/Home"
 import Login from '../Pages/public/Login'
 import PublicLayout from '../layouts/PublicLayout'
@@ -44,79 +53,92 @@ import ReceptionistSidebar from '../layouts/ReceptionistSidebar'
 import AddVehicleModal from '../components/common/VehicleManagement/AddVehicleModal'
 import AddVehiclePage from '../Pages/customer/AddVehiclePage'
 import EditVehiclePage from '../Pages/customer/EditVehiclePage'
-// import Dashboard from '../pages/admin/Dashboard'
+
+// Tạo một Root Component để cấu hình các tính năng Global cho Router
+const RootWrapper = () => {
+    return (
+        <>
+            {/* Outlet sẽ render các Layout hoặc Page con tương ứng */}
+            <Outlet />
+            {/* Phép màu nằm ở đây: Tự động lưu cache vị trí và cuộn lên top khi sang trang mới */}
+            <ScrollRestoration />
+        </>
+    );
+};
+
+// Khởi tạo Data Router theo chuẩn v6.4+Fre
+const router = createBrowserRouter(
+    createRoutesFromElements(
+        <Route element={<RootWrapper />}>
+            {/* Nhóm 1: Các trang dùng Public Layout (Có Navbar trên cùng) */}
+            <Route element={<PublicLayout />}>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/vehicleManagement" element={<VehicleManagement />} />
+                <Route path="/vehicleDetail/:id" element={<VehicleDetail />} />
+                <Route path="/sparePartsPage" element={<SparePartsPage />} />
+                <Route path="/itemDetailPage/:id" element={<ItemDetailPage />} />
+                <Route path="/servicePackagePage" element={<ServicePackagePage />} />
+                <Route path="/servicePackageDetailPage/:id" element={<ServicePackageDetailPage />} />
+                <Route path="/myServicePackagesPage" element={<MyServicePackagesPage />} />
+                <Route path="/myAppointmentHistory" element={<MyAppointmentHistory />} />
+                <Route path="/branchPage" element={<BranchPage />} />
+                <Route path="/bookingPage" element={<BookingPage />} />
+                <Route path="/servicePage" element={<ServicePage />} />
+                <Route path="/favouritePage" element={<FavouritePage />} />
+                <Route path="/emergencyBooking" element={<EmergencyBooking />} />
+                <Route path="vehicleManagement/addVehiclePage" element={<AddVehiclePage />} />
+                <Route path="vehicleManagement/edit/:id" element={<EditVehiclePage />} />
+            </Route>
+
+            {/* Nhóm 2: Các trang dùng Staff Layout (Có Sidebar bên trái) */}
+            <Route element={<StaffLayout />}>
+                <Route path="admin/sparePartsPage" element={<SparePartsPage />} />
+                {/* Sau này thêm route cho thợ, quản lý nhánh... vào đây */}
+            </Route>
+
+            {/* Giao diện bên nhân viên tư vấn (Receptionist)  */}
+            <Route element={<ReceptionistSidebar />}>
+                <Route path="receptionist/sparePartsPage" element={<SparePartsPage />} />
+                <Route path="receptionist/appointmentManagement" element={<AppointmentManagement />} />
+                <Route path="receptionist/walkInBooking" element={<WalkInBooking />} />
+                <Route path="receptionist/employeeProfile" element={<EmployeeProfile />} />
+                <Route path="receptionist/items" element={<StaffItemManagement />} />
+            </Route>
+
+            <Route element={<GenaralBranchSidebar />}>
+                <Route path='generalManager/employeeProfile' element={<EmployeeProfile />} />
+                <Route path='generalManager/branchManagement' element={<BranchManagement />} />
+                <Route path='generalManager/itemManagement' element={<ItemManagement />} />
+                <Route path='generalManager/servicePackageManagement' element={<ServicePackageManagement />} />
+                <Route path='generalManager/contentManager' element={<ContentManager />} />
+                <Route path='generalManager/categoryManagement' element={<CategoryManagement />} />
+                <Route path='generalManager/serviceManagement' element={<ServiceManagement />} />
+                <Route path='generalManager/personnelManagement' element={<PersonnelManagement />} />
+                <Route path='generalManager/dashboard' element={<Dashboard />} />
+                <Route path="generalManager/branchManagement/:id" element={<BranchDetail />} />
+                <Route path="generalManager/branchManagement/create" element={<BranchCreate />} />
+            </Route>
+
+            <Route element={<BranchManagerSideBar />}>
+                <Route path='branchManager/dashboard' element={<DashboardBM />} />
+                <Route path='branchManager/branchProfile' element={<BranchProfile />} />
+                <Route path='branchManager/employeeProfile' element={<EmployeeProfile />} />
+                <Route path='branchManager/personnelBranchManagement' element={<PersonnelBranchManagement />} />
+                <Route path='branchManager/branchInventory' element={<BranchInventory />} />
+                <Route path='branchManager/appointmentManagement' element={<AppointmentManagement />} />
+            </Route>
+
+            <Route element={<MechanicSideBar />}>
+                <Route path='mechanic/myShift' element={<MechanicAppointmentManagement />} />
+                <Route path='mechanic/myProfile' element={<EmployeeProfile />} />
+                <Route path="mechanic/items" element={<StaffItemManagement />} />
+            </Route>
+        </Route>
+    )
+);
 
 export default function AppRouter() {
-    return (
-        <BrowserRouter>
-            <Routes>
-                {/* Nhóm 1: Các trang dùng Public Layout (Có Navbar trên cùng) */}
-                <Route element={<PublicLayout />}>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/vehicleManagement" element={<VehicleManagement />} />
-                    <Route path="/vehicleDetail/:id" element={<VehicleDetail />} />
-                    <Route path="/sparePartsPage" element={<SparePartsPage />} />
-                    <Route path="/itemDetailPage/:id" element={<ItemDetailPage />} />
-                    <Route path="/servicePackagePage" element={<ServicePackagePage />} />
-                    <Route path="/servicePackageDetailPage/:id" element={<ServicePackageDetailPage />} />
-                    <Route path="/myServicePackagesPage" element={<MyServicePackagesPage />} />
-                    <Route path="/myAppointmentHistory" element={<MyAppointmentHistory />} />
-                    <Route path="/branchPage" element={<BranchPage />} />
-                    <Route path="/bookingPage" element={<BookingPage />} />
-                    <Route path="/servicePage" element={<ServicePage />} />
-                    <Route path="/favouritePage" element={<FavouritePage />} />
-                    <Route path="/emergencyBooking" element={<EmergencyBooking />} />
-                    <Route path="vehicleManagement/addVehiclePage" element={<AddVehiclePage />} />
-                    <Route path="vehicleManagement/edit/:id" element={<EditVehiclePage />} />
-                </Route>
-
-                {/* Nhóm 2: Các trang dùng Staff Layout (Có Sidebar bên trái) */}
-                <Route element={<StaffLayout />}>
-                    <Route path="admin/sparePartsPage" element={<SparePartsPage />} />
-                    {/* Sau này thêm route cho thợ, quản lý nhánh... vào đây */}
-                </Route>
-
-                {/* Giao diện bên nhân viên tư vấn (Receptionist)  */}
-                <Route element={<ReceptionistSidebar />}>
-                    <Route path="receptionist/sparePartsPage" element={<SparePartsPage />} />
-                    <Route path="receptionist/appointmentManagement" element={<AppointmentManagement />} />
-                    <Route path="receptionist/walkInBooking" element={<WalkInBooking />} />
-                    <Route path="receptionist/employeeProfile" element={<EmployeeProfile />} />
-                    <Route path="receptionist/items" element={<StaffItemManagement />} />
-
-                </Route>
-
-                <Route element={<GenaralBranchSidebar />}>
-                    <Route path='generalManager/employeeProfile' element={<EmployeeProfile />} />
-                    <Route path='generalManager/branchManagement' element={<BranchManagement />} />
-                    <Route path='generalManager/itemManagement' element={<ItemManagement />} />
-                    <Route path='generalManager/servicePackageManagement' element={<ServicePackageManagement />} />
-                    <Route path='generalManager/contentManager' element={<ContentManager />} />
-                    <Route path='generalManager/categoryManagement' element={<CategoryManagement />} />
-                    <Route path='generalManager/serviceManagement' element={<ServiceManagement />} />
-                    <Route path='generalManager/personnelManagement' element={<PersonnelManagement />} />
-                    <Route path='generalManager/dashboard' element={<Dashboard />} />
-                    <Route path="generalManager/branchManagement/:id" element={<BranchDetail />} />
-                    <Route path="generalManager/branchManagement/create" element={<BranchCreate />} />
-                </Route>
-
-                <Route element={<BranchManagerSideBar />}>
-                    <Route path='branchManager/dashboard' element={<DashboardBM />} />
-                    <Route path='branchManager/branchProfile' element={<BranchProfile />} />
-                    <Route path='branchManager/employeeProfile' element={<EmployeeProfile />} />
-                    <Route path='branchManager/personnelBranchManagement' element={<PersonnelBranchManagement />} />
-                    <Route path='branchManager/branchInventory' element={<BranchInventory />} />
-                    <Route path='branchManager/appointmentManagement' element={<AppointmentManagement />} />
-                </Route>
-
-                <Route element={<MechanicSideBar />}>
-                    <Route path='mechanic/myShift' element={<MechanicAppointmentManagement />} />
-                    <Route path='mechanic/myProfile' element={<EmployeeProfile />} />
-                    <Route path="mechanic/items" element={<StaffItemManagement />} />
-                </Route>
-            </Routes>
-        </BrowserRouter>
-    )
+    return <RouterProvider router={router} />;
 }

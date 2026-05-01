@@ -8,6 +8,7 @@ import { contentApi } from "../../api/contentApi";
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from "react-router-dom"; // Thêm Link từ react-router-dom
 import AnimatedBanners from "./Home/AnimatedBanners";
+import useSmartScroll from "../../components/common/useSmartScroll";
 
 export default function Home() {
 
@@ -17,6 +18,8 @@ export default function Home() {
     const [isLoading, setIsLoading] = useState(true);
 
     const navigate = useNavigate();
+
+    // useSmartScroll(isLoading)
 
     useEffect(() => {
         const fetchHomeData = async () => {

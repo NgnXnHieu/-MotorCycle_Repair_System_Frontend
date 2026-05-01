@@ -235,21 +235,6 @@ export default function AddVehiclePage() {
                                 />
                             </div>
 
-                            {/* ... (Code Năm sản xuất cũ) ... */}
-                            <div>
-                                <label className="text-sm font-bold text-slate-700 mb-2 block">Năm sản xuất <span className="text-rose-500">*</span></label>
-                                <input
-                                    name="manufacture_year"
-                                    type="number"
-                                    min="1990"
-                                    max={new Date().getFullYear()}
-                                    value={formData.manufacture_year}
-                                    required
-                                    onChange={handleInputChange}
-                                    className="w-full p-4 border-2 border-slate-100 rounded-2xl outline-none focus:border-indigo-500 bg-slate-50 font-mono font-bold"
-                                />
-                            </div>
-
                             <div>
                                 <label className="text-sm font-bold text-slate-700 flex items-center gap-2 mb-2">
                                     <Gauge size={16} className="text-indigo-500" /> Số Kilomet (ODO)

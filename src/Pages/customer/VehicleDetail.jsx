@@ -16,6 +16,8 @@ export default function VehicleDetail() {
     const { id } = useParams();
     const [activeFilter, setActiveFilter] = useState('ALL');
 
+    const navigate = useNavigate();
+
     // 1. HÀM FETCH THÔNG TIN XE (CHỈ GỌI 1 LẦN DỰA VÀO ID)
     const fetchVehicleDetail = async () => {
         setIsVehicleLoading(true);
@@ -125,6 +127,11 @@ export default function VehicleDetail() {
         return `${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - ${date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
     };
 
+    //Chuyển màn hình
+    const handleBookButton = () => {
+        navigate(`/bookingPage`, { state: { vehicle: vehicle } });
+    }
+
     const getStatusBadge = (status) => {
         const styles = {
             'BOOKED': 'bg-slate-100 text-slate-700 border-slate-300 shadow-sm',
@@ -172,7 +179,9 @@ export default function VehicleDetail() {
                         <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Hồ sơ phương tiện</h1>
                         <p className="text-slate-500 mt-1 font-medium">Theo dõi tình trạng và lịch sử bảo dưỡng</p>
                     </div>
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-3 px-6 rounded-2xl shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2">
+                    <button
+                        onClick={handleBookButton}
+                        className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-3 px-6 rounded-2xl shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2">
                         <PlusCircle size={20} /> Đặt lịch dịch vụ
                     </button>
                 </div>

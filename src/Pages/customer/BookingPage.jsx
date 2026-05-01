@@ -4,7 +4,7 @@ import {
     Clock, CheckCircle2, AlertCircle, Wand2, PlusCircle,
     ChevronLeft, ChevronRight, Map, X, Loader2
 } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { branchApi } from '../../api/branchApi';
 import { customerApi } from '../../api/customerApi';
 import { dailyShiftApi } from '../../api/dailyShiftApi';
@@ -36,7 +36,29 @@ export default function BookingPage() {
     const [shifts, setShifts] = useState([]);
     const [isShiftsLoading, setIsShiftsLoading] = useState(false);
 
+    // State quản lý việc hiển thị Form Xác nhận trước khi gọi API
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+    const [bookingStatus, setBookingStatus] = useState({
+        isOpen: false,
+        type: '', // 'success' hoặc 'error'
+        message: ''
+    });
+
+    const location = useLocation()
     const navigate = useNavigate()
+
+    useEffect(() => {
+        const vehicle = location.state?.vehicle;
+        if (vehicle) {
+            setFormData(prev => ({
+                ...prev,
+                licensePlate: vehicle.licensePlate || "",
+                brand: vehicle.brand || "",
+                model: vehicle.model || ""
+            }));
+        }
+    }, [])
 
     useEffect(() => {
         const fetchInitialBranch = async () => {
@@ -203,6 +225,57 @@ export default function BookingPage() {
         }
     };
 
+    // HÀM PHA 1: Chỉ kiểm tra form và hiển thị Modal Xác nhận
+    const handleRequestSubmit = (e) => {
+        e.preventDefault();
+
+        if (!currentBranch || !selectedShift) {
+            setBookingStatus({ isOpen: true, type: 'error', message: "Vui lòng chọn cơ sở và thời gian tiếp nhận!" });
+            return;
+        }
+
+        if (!validateForm()) {
+            window.scrollTo({ top: 300, behavior: 'smooth' });
+            return;
+        }
+
+        // Nếu mọi thông tin đều chuẩn chỉ -> Bật Modal Hỏi Xác Nhận
+        setShowConfirmModal(true);
+    };
+
+    // HÀM PHA 2: Chạy khi người dùng bấm "Đồng ý" trên Modal Xác nhận
+    const executeBooking = async () => {
+        setShowConfirmModal(false); // 1. Tắt modal xác nhận đi
+        setIsSubmitting(true);      // 2. Bật cờ loading báo đang gọi API
+
+        try {
+            const payload = {
+                dailyShiftCapacity_id: selectedShift,
+                bringerName: formData.fullName.trim(),
+                bringerPhone: formData.phone.trim(),
+                plateNumber: formData.licensePlate.trim(),
+                brand: formData.brand.trim() || null,
+                model: formData.model.trim() || null,
+            };
+
+            await appointmentApi.createBooking(payload);
+
+            // Gọi API Spring Boot thành công -> Bật Modal Success
+            setBookingStatus({
+                isOpen: true,
+                type: 'success',
+                message: "Đã đặt lịch thành công! Cảm ơn bạn đã tin tưởng sử dụng dịch vụ."
+            });
+
+        } catch (error) {
+            console.error("Lỗi đặt lịch:", error);
+            const errorMessage = error.response?.data?.message || "Có lỗi xảy ra khi kết nối đến máy chủ. Vui lòng thử lại.";
+            setBookingStatus({ isOpen: true, type: 'error', message: errorMessage });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const validateForm = () => {
         const newErrors = {};
 
@@ -224,43 +297,6 @@ export default function BookingPage() {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        if (!currentBranch || !selectedShift) {
-            alert("Vui lòng hoàn thiện thông tin cơ sở và thời gian!");
-            return;
-        }
-
-        if (!validateForm()) {
-            window.scrollTo({ top: 300, behavior: 'smooth' });
-            return;
-        }
-
-        setIsSubmitting(true);
-
-        try {
-            const payload = {
-                dailyShiftCapacity_id: selectedShift,
-                bringerName: formData.fullName.trim(),
-                bringerPhone: formData.phone.trim(),
-                plateNumber: formData.licensePlate.trim(),
-                brand: formData.brand.trim() || null,
-                model: formData.model.trim() || null,
-            };
-
-            await appointmentApi.createBooking(payload);
-            alert("Đã đặt lịch thành công!");
-            navigate(`/myAppointmentHistory`)
-
-        } catch (error) {
-            console.error("Lỗi đặt lịch:", error);
-            const errorMessage = error.response?.data?.message || "Có lỗi xảy ra khi đặt lịch. Vui lòng thử lại.";
-            alert(errorMessage);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
 
     return (
         <div className="w-full min-h-screen bg-slate-50 font-sans antialiased pb-20 relative">
@@ -270,8 +306,8 @@ export default function BookingPage() {
                 <img src="https://images.unsplash.com/photo-1625047509168-a7026f36de04?q=80&w=2070&auto=format&fit=crop" alt="Booking" className="w-full h-full object-cover opacity-40" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 w-full p-6 sm:p-10 max-w-7xl mx-auto">
-                    <span className="px-3 py-1 bg-indigo-600/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-widest rounded-lg mb-3 inline-block shadow-sm">Bước 2 / 3</span>
-                    <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight drop-shadow-md">Hoàn tất đặt lịch</h1>
+                    {/* <span className="px-3 py-1 bg-indigo-600/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-widest rounded-lg mb-3 inline-block shadow-sm">Bước 2 / 3</span> */}
+                    <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight drop-shadow-md">Đặt lịch bảo dưỡng</h1>
                 </div>
             </div>
 
@@ -515,7 +551,7 @@ export default function BookingPage() {
                                 )}
                             </div>
                             <button
-                                onClick={handleSubmit}
+                                onClick={handleRequestSubmit}
                                 disabled={!selectedShift || !currentBranch || isSubmitting}
                                 className="flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed w-full sm:w-auto bg-emerald-500 text-white font-bold text-sm px-8 py-4 rounded-xl shadow-lg shadow-emerald-500/20 transition-all duration-300 hover:bg-emerald-600 active:scale-95 disabled:bg-slate-700 disabled:text-slate-500 disabled:shadow-none"
                             >
@@ -644,6 +680,98 @@ export default function BookingPage() {
                     </div>
                 </div>
             )}
+            {/* --- MODAL THÔNG BÁO TRẠNG THÁI ĐẶT LỊCH --- */}
+            {bookingStatus.isOpen && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+                    <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl z-10 p-6 sm:p-8 text-center animate-in zoom-in-95 duration-200">
+
+                        {/* Icon trạng thái */}
+                        <div className={`mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-5 shadow-inner ${bookingStatus.type === 'success' ? 'bg-emerald-100 text-emerald-500' : 'bg-red-100 text-red-500'}`}>
+                            {bookingStatus.type === 'success' ? <CheckCircle2 size={40} /> : <AlertCircle size={40} />}
+                        </div>
+
+                        {/* Tiêu đề */}
+                        <h3 className={`text-2xl font-black mb-3 tracking-tight ${bookingStatus.type === 'success' ? 'text-slate-900' : 'text-red-600'}`}>
+                            {bookingStatus.type === 'success' ? 'Thành công!' : 'Đặt lịch thất bại'}
+                        </h3>
+
+                        {/* Lời nhắn */}
+                        <p className="text-slate-500 font-medium mb-8 leading-relaxed text-sm">
+                            {bookingStatus.message}
+                        </p>
+
+                        {/* Nút hành động */}
+                        <button
+                            onClick={() => {
+                                setBookingStatus({ ...bookingStatus, isOpen: false });
+                                // Nếu thành công thì chuyển trang, nếu lỗi thì chỉ đóng modal để sửa lại form
+                                if (bookingStatus.type === 'success') {
+                                    navigate('/myAppointmentHistory');
+                                }
+                            }}
+                            className={`w-full py-4 rounded-xl font-bold text-white transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 ${bookingStatus.type === 'success' ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/30' : 'bg-slate-900 hover:bg-slate-800 shadow-slate-900/30'}`}
+                        >
+                            {bookingStatus.type === 'success' ? 'Xem lịch hẹn của tôi' : 'Quay lại chỉnh sửa'}
+                        </button>
+                    </div>
+                </div>
+            )}
+            {/* Form xác nhận đặt */}
+            {showConfirmModal && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+                    <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl z-10 p-6 sm:p-8 animate-in zoom-in-95 duration-200">
+
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center shrink-0">
+                                <CalendarDays size={28} />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-black text-slate-900">Xác nhận lịch hẹn</h3>
+                                <p className="text-slate-500 text-sm font-medium">Kiểm tra kỹ thông tin trước khi gửi.</p>
+                            </div>
+                        </div>
+
+                        {/* Tóm tắt nhanh thông tin để khách kiểm tra */}
+                        <div className="bg-slate-50 rounded-xl p-4 mb-8 space-y-3 border border-slate-100">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-slate-500 font-medium">Khách hàng:</span>
+                                <span className="font-bold text-slate-900">{formData.fullName}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-slate-500 font-medium">Xe:</span>
+                                <span className="font-bold text-slate-900">{formData.licensePlate}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-slate-500 font-medium">Thời gian:</span>
+                                <span className="font-bold text-indigo-600">
+                                    {(() => {
+                                        const s = shifts.find(s => s.id === selectedShift);
+                                        return s ? `${availableDates[selectedDate].dateStr} | ${s.startTime.slice(0, 5)}` : "";
+                                    })()}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowConfirmModal(false)} // Nút Hủy
+                                className="flex-1 py-3.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                            >
+                                Quay lại
+                            </button>
+                            <button
+                                onClick={executeBooking} // Nút Đồng ý -> Gọi hàm Pha 2
+                                className="flex-1 py-3.5 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all active:scale-95 flex justify-center items-center gap-2"
+                            >
+                                Đồng ý đặt lịch
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
-    ); z
+    );
 }
