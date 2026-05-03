@@ -53,6 +53,7 @@ import ReceptionistSidebar from '../layouts/ReceptionistSidebar'
 import AddVehicleModal from '../components/common/VehicleManagement/AddVehicleModal'
 import AddVehiclePage from '../Pages/customer/AddVehiclePage'
 import EditVehiclePage from '../Pages/customer/EditVehiclePage'
+import CustomerProfile from '../Pages/customer/CustomerProfile';
 
 // Tạo một Root Component để cấu hình các tính năng Global cho Router
 const RootWrapper = () => {
@@ -90,6 +91,7 @@ const router = createBrowserRouter(
                 <Route path="/emergencyBooking" element={<EmergencyBooking />} />
                 <Route path="vehicleManagement/addVehiclePage" element={<AddVehiclePage />} />
                 <Route path="vehicleManagement/edit/:id" element={<EditVehiclePage />} />
+                <Route path="/profile" element={<CustomerProfile />} />
             </Route>
 
             {/* Nhóm 2: Các trang dùng Staff Layout (Có Sidebar bên trái) */}
