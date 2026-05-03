@@ -25,4 +25,9 @@ export const serviceApi = {
         return axiosClient.get(`/services/${id}`);
     },
 
+    //Lấy ra thông tin chi tiết service detail kèm list item, service
+    getServiceDetail: (id) => {
+        return axiosClient.get(`/serviceDetail/${id}`)
+    }
+
 }

@@ -6,7 +6,6 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import useSmartScroll from "../../components/common/useSmartScroll";
 
 export default function Login() {
     const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm();
@@ -21,11 +20,10 @@ export default function Login() {
     // ==========================================
     const [loginError, setLoginError] = useState("");
 
-    // useEffect(() => {
-    //     window.scrollTo(0, 0);
-    //     reset();
-    // }, [reset]);
-    useSmartScroll(isLoading);
+    useEffect(() => {
+        window.scrollTo(0, 0);
+        reset();
+    }, [reset]);
 
     const onSubmit = async (data) => {
         // Reset lại lỗi mỗi lần bấm đăng nhập
