@@ -56,10 +56,10 @@ const ReceptionistSidebar = () => {
                             }`}
                     >
                         <span className="text-white font-bold text-sm tracking-wider whitespace-nowrap">
-                            HỆ THỐNG
+                            TƯ VẤN VIÊN
                         </span>
                         <span className="text-slate-400 text-xs whitespace-nowrap">
-                            General Manager
+                            Receptionist
                         </span>
                     </div>
                 </div>

@@ -33,7 +33,7 @@ const MechanicSideBar = () => {
 
     // Hệ thống Icon đã được cập nhật lại cho phù hợp với từng nghiệp vụ
     const MENU_ITEMS = [
-        { path: '/mechanic/items', icon: <FaChartPie />, label: 'Ca sửa' },
+        { path: '/mechanic/items', icon: <FaChartPie />, label: 'Kho phụ tùng' },
         { path: '/mechanic/myShift', icon: <FaChartPie />, label: 'Ca sửa' },
         // { path: '/mechanic/mechanicAppointmentManagement', icon: <FaUserGear />, label: 'Quản lý Tài khoản' },
         { path: '/mechanic/myProfile', icon: <FaUserGear />, label: 'Quản lý Tài khoản' },
