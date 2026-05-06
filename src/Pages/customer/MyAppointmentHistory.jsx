@@ -54,10 +54,10 @@ export default function MyAppointmentHistory() {
                     const [year, month, day] = appt.dailyShiftCapacityDTO.workingDay.split('-');
                     const shift = appt.dailyShiftCapacityDTO.shiftInBranchDTO.shiftDTO;
                     const branch = appt.dailyShiftCapacityDTO.shiftInBranchDTO.branchDTO;
-                    const isEarlyStage = ['BOOKED', 'DIAGNOSING'].includes(appt.appointment_status);
-
+                    const isEarlyStage = ['BOOKED', 'DIAGNOSING', 'REQUEST', 'ACCEPT'].includes(appt.appointment_status);
                     return {
                         id: appt.id,
+                        appointment_type: appt.appointmentType, // Bổ sung loại ca sửa để phân biệt WAITING
                         status_time: appt.status_time,
                         bringer_name: appt.bringer_name,
                         bringer_phone: appt.bringer_phone,
@@ -131,26 +131,32 @@ export default function MyAppointmentHistory() {
         return `${date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - ${date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
     };
 
-    const getStatusBadge = (status) => {
+    const getStatusBadge = (status, type) => {
         const styles = {
             'BOOKED': 'bg-slate-700 text-white border-slate-800 shadow-slate-300/50',
+            'REQUEST': 'bg-orange-500 text-white border-orange-600 shadow-orange-300/50',
+            'ACCEPT': 'bg-cyan-600 text-white border-cyan-700 shadow-cyan-300/50',
             'DIAGNOSING': 'bg-indigo-600 text-white border-indigo-700 shadow-indigo-300/50',
             'WAITING': 'bg-amber-500 text-white border-amber-600 shadow-amber-300/50',
             'FIXING': 'bg-blue-600 text-white border-blue-700 shadow-blue-300/50',
             'FINISHED': 'bg-emerald-600 text-white border-emerald-700 shadow-emerald-300/50',
             'CANCELED': 'bg-red-600 text-white border-red-700 shadow-red-300/50'
         };
+
         const labels = {
             'BOOKED': 'ĐÃ ĐẶT LỊCH',
+            'REQUEST': 'YÊU CẦU HỖ TRỢ',
+            'ACCEPT': 'ĐÃ CHẤP NHẬN HỖ TRỢ',
             'DIAGNOSING': 'ĐANG CHẨN ĐOÁN',
-            'WAITING': 'CHỜ SỬA CHỮA',
+            'WAITING': type === 'EMERGENCY' ? 'ĐANG GỬI HỖ TRỢ' : 'CHỜ SỬA CHỮA',
             'FIXING': 'ĐANG SỬA CHỮA',
             'FINISHED': 'ĐÃ HOÀN THÀNH',
             'CANCELED': 'ĐÃ HỦY'
         };
+
         return (
             <span className={`${styles[status] || 'bg-slate-700 text-white border-slate-800'} border shadow-md px-4 py-2 rounded-md text-sm font-black tracking-wider inline-flex items-center gap-2 uppercase`}>
-                <span className={`w-2 h-2 rounded-full bg-white ${status === 'FIXING' || status === 'DIAGNOSING' ? 'animate-pulse' : 'opacity-90'}`}></span>
+                <span className={`w-2 h-2 rounded-full bg-white ${['FIXING', 'DIAGNOSING', 'WAITING', 'ACCEPT'].includes(status) ? 'animate-pulse' : 'opacity-90'}`}></span>
                 {labels[status] || status}
             </span>
         );
@@ -244,7 +250,7 @@ export default function MyAppointmentHistory() {
 
                                     <div className="md:w-1/3 flex flex-col p-6 sm:p-8 md:border-r-2 border-slate-200 bg-slate-50/80 relative">
                                         <div className="mb-6 flex justify-center">
-                                            {getStatusBadge(appt.appointment_status)}
+                                            {getStatusBadge(appt.appointment_status, appt.appointment_type)}
                                         </div>
 
                                         <div className="flex items-center gap-4 bg-white p-3 rounded-md border-2 border-slate-200 shadow-sm mb-6 transition-all duration-300 group-hover:border-indigo-300 group-hover:shadow-md">
