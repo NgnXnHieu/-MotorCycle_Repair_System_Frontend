@@ -54,6 +54,8 @@ import AddVehicleModal from '../components/common/VehicleManagement/AddVehicleMo
 import AddVehiclePage from '../Pages/customer/AddVehiclePage'
 import EditVehiclePage from '../Pages/customer/EditVehiclePage'
 import CustomerProfile from '../Pages/customer/CustomerProfile';
+import DiagnosisPage from '../Pages/receptionist/DiagnosisPage';
+import ServiceDetailModal from '../Pages/customer/ServiceDetailModal';
 
 // Tạo một Root Component để cấu hình các tính năng Global cho Router
 const RootWrapper = () => {
@@ -107,6 +109,7 @@ const router = createBrowserRouter(
                 <Route path="receptionist/walkInBooking" element={<WalkInBooking />} />
                 <Route path="receptionist/employeeProfile" element={<EmployeeProfile />} />
                 <Route path="receptionist/items" element={<StaffItemManagement />} />
+                <Route path="receptionist/diagnosisPage/:appointmentId" element={<DiagnosisPage />} />
             </Route>
 
             <Route element={<GenaralBranchSidebar />}>
