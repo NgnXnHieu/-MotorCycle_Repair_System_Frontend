@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, ShieldCheck, Clock, Repeat, SlidersHorizontal, ChevronRight } from 'lucide-react';
 import { servicePackageApi } from '../../api/servicePackageApi';
+import { contentApi } from '../../api/contentApi';
 import { getErrorMessage } from '../../utils/errorHandler';
 import Pagination from '../../components/common/Pagination';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -15,6 +16,9 @@ export default function ServicePackagePage() {
 
     // Lấy số trang từ URL (nếu URL chưa có gì thì mặc định là 0)
     const pageFromUrl = parseInt(searchParams.get('page')) || 0;
+
+    // --- STATES DỮ LIỆU ĐỘNG (CMS) ---
+    const [pageContents, setPageContents] = useState({});
 
     // --- STATES BỘ LỌC ---
     const [isFilterOpen, setIsFilterOpen] = useState(true);
@@ -36,14 +40,39 @@ export default function ServicePackagePage() {
         { value: 'YEAR', label: 'Tính theo Năm' }
     ];
 
-    // 1. Lắng nghe searchParams (URL) để fetch dữ liệu gói dịch vụ
+    // 1. Fetch Dữ liệu CMS (Nội dung tĩnh được cấu hình) từ DB
+    useEffect(() => {
+        const fetchPageContents = async () => {
+            try {
+                const response = await contentApi.getContentList('SERVICEPACKAGE_PAGE');
+                const contentList = response.data || response;
+
+                if (Array.isArray(contentList)) {
+                    const mappedContents = contentList.reduce((acc, item) => {
+                        // Đã sửa lại thành camelCase khớp với API trả về
+                        acc[item.contentKey] = {
+                            value: item.contentValue,
+                            color: item.color
+                        };
+                        return acc;
+                    }, {});
+                    setPageContents(mappedContents);
+                }
+            } catch (error) {
+                console.error("Lỗi khi tải nội dung động:", error);
+            }
+        };
+        fetchPageContents();
+    }, []);
+
+    // 2. Lắng nghe searchParams (URL) để fetch dữ liệu gói dịch vụ
     useEffect(() => {
         const page = parseInt(searchParams.get('page')) || 0;
         setCurrentPage(page);
         handleSearch(page);
     }, [searchParams]);
 
-    // 2. Hàm gọi API
+    // 3. Hàm gọi API tìm kiếm gói dịch vụ
     const handleSearch = async (page = 0) => {
         const filterForm = {
             minPrice: minPrice,
@@ -71,7 +100,7 @@ export default function ServicePackagePage() {
         }
     };
 
-    // 3. Xử lý điều hướng & kích hoạt tìm kiếm
+    // 4. Xử lý điều hướng & kích hoạt tìm kiếm
     const handleResetSearch = () => {
         setSearchParams({ page: 0 });
         handleSearch()
@@ -99,22 +128,35 @@ export default function ServicePackagePage() {
 
     return (
         <div className="min-h-screen bg-zinc-50 pb-12 font-sans text-zinc-900">
-            {/* HER0 SECTION */}
-            <div className="relative w-full h-[320px] md:h-[400px] mb-10 overflow-hidden">
+            {/* HERO SECTION ĐÃ ĐƯỢC CẬP NHẬT ĐỘNG (CMS) */}
+            <div className="relative w-full h-[320px] md:h-[400px] mb-10 overflow-hidden bg-zinc-900">
                 <img
-                    src="https://images.unsplash.com/photo-1549317661-ef355e75fe22?q=80&w=1920&auto=format&fit=crop"
+                    src={pageContents.hero_bg_image?.value || "https://images.unsplash.com/photo-1549317661-ef355e75fe22?q=80&w=1920&auto=format&fit=crop"}
                     alt="Dịch vụ sửa chữa xe"
-                    className="absolute inset-0 w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover opacity-80"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-zinc-900/95 via-zinc-900/80 to-zinc-900/30"></div>
 
                 <div className="absolute inset-0 flex flex-col items-start justify-center px-6 md:px-16 lg:px-24 max-w-[1440px] mx-auto z-10">
-                    <span className="text-amber-500 font-bold tracking-[0.2em] uppercase text-xs mb-4 drop-shadow-sm border-l-2 border-amber-500 pl-3">Dịch Vụ Cao Cấp</span>
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 drop-shadow-md tracking-tight max-w-2xl leading-tight">
-                        Chăm sóc xe <br /> chuyên nghiệp
-                    </h1>
-                    <p className="text-base md:text-lg text-zinc-300 font-light max-w-xl drop-shadow-sm leading-relaxed">
-                        Nâng tầm trải nghiệm bảo dưỡng xe với các gói dịch vụ cao cấp. Đảm bảo hiệu suất tối đa và độ bền bỉ vượt thời gian.
+                    <span
+                        className="font-bold tracking-[0.2em] uppercase text-xs mb-4 drop-shadow-sm border-l-2 pl-3"
+                        style={{
+                            color: pageContents.hero_subtitle?.color || '#f59e0b',
+                            borderColor: pageContents.hero_subtitle?.color || '#f59e0b'
+                        }}
+                    >
+                        {pageContents.hero_subtitle?.value || "Dịch Vụ Cao Cấp"}
+                    </span>
+                    <h1
+                        className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 drop-shadow-md tracking-tight max-w-2xl leading-tight"
+                        style={{ color: pageContents.hero_title?.color || '#ffffff' }}
+                        dangerouslySetInnerHTML={{ __html: pageContents.hero_title?.value || 'Chăm sóc xe <br /> chuyên nghiệp' }}
+                    />
+                    <p
+                        className="text-base md:text-lg font-light max-w-xl drop-shadow-sm leading-relaxed"
+                        style={{ color: pageContents.hero_description?.color || '#d4d4d8' }}
+                    >
+                        {pageContents.hero_description?.value || "Nâng tầm trải nghiệm bảo dưỡng xe với các gói dịch vụ cao cấp. Đảm bảo hiệu suất tối đa và độ bền bỉ vượt thời gian."}
                     </p>
                 </div>
             </div>
@@ -242,10 +284,6 @@ export default function ServicePackagePage() {
                                                             <div className="absolute -left-8 -bottom-8 w-32 h-32 bg-zinc-800/50 rounded-full blur-2xl"></div>
                                                         </div>
                                                     )}
-                                                    {/* Badge */}
-                                                    {/* <div className="absolute top-4 right-4 bg-zinc-900/95 backdrop-blur-sm text-amber-500 text-[10px] font-bold px-3 py-1.5 rounded-sm uppercase tracking-widest z-20 shadow-sm">
-                                                        Premium
-                                                    </div> */}
                                                 </div>
 
                                                 <div className="p-5 flex flex-col flex-1">

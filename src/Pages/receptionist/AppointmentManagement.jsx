@@ -368,12 +368,18 @@ const AppointmentManagement = () => {
                             >
                                 {/* CỘT TRÁI: THÔNG TIN KHÁCH HÀNG */}
                                 <div className={`p-5 md:w-[28%] border-r border-gray-300 flex flex-col justify-center ${isEmergency ? 'bg-red-50' : 'bg-gray-50'}`}>
-                                    <div className="font-black text-lg text-gray-900 flex items-center gap-2 uppercase">
-                                        <FaMotorcycle className={isEmergency ? "text-red-600" : "text-[#5b9b8b]"} size={22} />
-                                        {vehicle ? `${vehicle.brand} ${vehicle.model}` : 'Chưa có xe'}
+
+                                    {/* 1. Biển số xe: Đưa lên đầu, làm nổi bật với style giống biển số thật */}
+                                    <div className="mb-3">
+                                        <span className="bg-[#fbbf24] text-gray-900 font-bold text-xl px-4 py-1.5 rounded-sm border-1 border-gray-800 shadow-sm tracking-widest inline-block uppercase">
+                                            {vehicle?.licensePlate || 'CHƯA CÓ BSX'}
+                                        </span>
                                     </div>
-                                    <div className="text-gray-700 font-bold text-sm mb-4 mt-1 bg-white inline-block w-fit px-2 py-1 border border-gray-300 rounded-sm">
-                                        BSX: {vehicle?.licensePlate || 'Trống'}
+
+                                    {/* 2. Loại xe: Đưa xuống dưới, chữ nhỏ hơn một chút so với biển số */}
+                                    <div className="font-bold text-base text-gray-700 flex items-center gap-2 uppercase mb-4">
+                                        <FaMotorcycle className={isEmergency ? "text-red-600" : "text-[#5b9b8b]"} size={20} />
+                                        {vehicle ? `${vehicle.brand} ${vehicle.model}` : 'Chưa có thông tin xe'}
                                     </div>
 
                                     <div className="flex items-center gap-3 text-sm text-gray-800 mt-2 font-medium">
@@ -482,9 +488,18 @@ const AppointmentManagement = () => {
                                                         <FaUserCog className="text-purple-600 text-base mt-0.5 shrink-0" />
                                                         <div>
                                                             <span className="font-black text-gray-900 uppercase block mb-1">Thợ phụ trách:</span>
-                                                            <span className="text-gray-900 font-bold bg-white border border-gray-300 px-2 py-1 rounded-sm inline-block shadow-sm">
-                                                                {repairOrder?.employeeDTO?.full_name || 'Chưa phân công'}
-                                                            </span>
+                                                            <div className="bg-white border border-gray-300 px-2 py-1 rounded-sm inline-flex items-center shadow-sm">
+                                                                <span className="text-gray-900 font-bold">
+                                                                    {repairOrder?.employeeDTO?.full_name || 'Chưa phân công'}
+                                                                </span>
+                                                                {/* Render SĐT nếu có */}
+                                                                {repairOrder?.employeeDTO?.phone && (
+                                                                    <span className="text-gray-600 text-xs ml-2 pl-2 border-l border-gray-300">
+                                                                        <FaPhone className="inline-block mr-1 text-gray-400 mb-0.5" size={10} />
+                                                                        {repairOrder.employeeDTO.phone}
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
 
@@ -526,11 +541,20 @@ const AppointmentManagement = () => {
 
                                     {/* Footer card */}
                                     <div className="flex flex-wrap justify-between items-end pt-4 border-t border-gray-200 mt-5">
-                                        <div className="flex flex-col gap-1">
-                                            <div className="text-sm text-gray-500 font-medium bg-gray-100 px-3 py-1 rounded-sm border border-gray-200">
-                                                <span className="font-bold text-gray-700">Tạo lúc: </span>
-                                                {new Date(appt?.created_at).toLocaleString('vi-VN')}
+                                        {/* Box hiển thị thời gian */}
+                                        <div className="flex flex-col gap-2">
+                                            <div className="text-sm text-gray-600 font-medium bg-gray-100 px-3 py-1.5 rounded-sm border border-gray-200 flex items-center gap-2">
+                                                <span className="font-bold text-gray-800">Tạo lúc:</span>
+                                                {appt?.created_at ? new Date(appt.created_at).toLocaleString('vi-VN') : 'N/A'}
                                             </div>
+
+                                            {/* Render status_time */}
+                                            {appt?.status_time && (
+                                                <div className="text-sm text-blue-700 font-medium bg-blue-50 px-3 py-1.5 rounded-sm border border-blue-200 flex items-center gap-2">
+                                                    <span className="font-bold text-blue-800">Cập nhật trạng thái lúc:</span>
+                                                    {new Date(appt.status_time).toLocaleString('vi-VN')}
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div className="flex items-center gap-3 mt-4 sm:mt-0">
@@ -544,7 +568,7 @@ const AppointmentManagement = () => {
                                             </span>
 
                                             {!isEmergency && status === 'BOOKED' && (
-                                                <button onClick={() => handleReceiveVehicle(appt.id)} className="bg-white border-2 border-[#5b9b8b] text-[#5b9b8b] hover:bg-[#5b9b8b] hover:text-white px-5 py-2 rounded-sm font-bold transition-colors uppercase text-sm shadow-sm">
+                                                <button onClick={() => handleReceiveVehicle(appt.id)} className="curosr-pointer bg-white border-2 border-[#5b9b8b] text-[#5b9b8b] hover:bg-[#5b9b8b] hover:text-black hover:bg-green-500 px-5 py-2 rounded-sm font-bold transition-colors uppercase text-sm shadow-sm">
                                                     ĐÃ NHẬN XE
                                                 </button>
                                             )}

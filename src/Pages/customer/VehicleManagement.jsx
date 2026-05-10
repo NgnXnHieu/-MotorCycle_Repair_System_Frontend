@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Edit, ShieldCheck, Calendar, Hash, Wrench, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { vehicleApi } from '../../api/vehicleApi';
+import { contentApi } from '../../api/contentApi'; // Import thêm api content
 import AddVehicleModal from '../../components/common/VehicleManagement/AddVehicleModal';
 import { getErrorMessage } from '../../utils/errorHandler';
 import EditVehicleModal from '../../components/common/VehicleManagement/EditVehicleModal';
@@ -12,6 +13,10 @@ export default function VehicleManagement() {
     const [vehicles, setVehicles] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingVehicle, setEditingVehicle] = useState(null);
+
+    // --- STATE CMS ĐỘNG ---
+    const [pageContents, setPageContents] = useState({});
+
     // --- STATE MỚI: Dành cho Toast và Submit Loading ---
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
@@ -23,6 +28,30 @@ export default function VehicleManagement() {
             setToast({ show: false, type: '', message: '' });
         }, 3000);
     };
+
+    // LẤY DỮ LIỆU NỘI DUNG CMS
+    useEffect(() => {
+        const fetchPageContents = async () => {
+            try {
+                const response = await contentApi.getContentList('VEHICLE_MANAGEMENT');
+                const contentList = response.data || response;
+
+                if (Array.isArray(contentList)) {
+                    const mappedContents = contentList.reduce((acc, item) => {
+                        acc[item.contentKey] = {
+                            value: item.contentValue,
+                            color: item.color
+                        };
+                        return acc;
+                    }, {});
+                    setPageContents(mappedContents);
+                }
+            } catch (error) {
+                console.error("Lỗi khi tải nội dung động CMS:", error);
+            }
+        };
+        fetchPageContents();
+    }, []);
 
     const fetchVehicles = async () => {
         try {
@@ -42,7 +71,7 @@ export default function VehicleManagement() {
 
     const handleSaveNewVehicle = async (newVehicleData, imageFile) => {
         try {
-            setIsSubmitting(true); // Bật cờ đang gửi API
+            setIsSubmitting(true);
             const formData = new FormData();
             formData.append('licensePlate', newVehicleData.licensePlate);
             formData.append('brand', newVehicleData.brand);
@@ -54,54 +83,12 @@ export default function VehicleManagement() {
             }
 
             await vehicleApi.createVehicle(formData);
-
-            // Tắt Modal và reset trạng thái trước
             setIsModalOpen(false);
-
-            // Hiện thông báo thành công
             showToast('success', 'Đã thêm phương tiện mới thành công!');
-
-            // Cập nhật lại danh sách
             await fetchVehicles();
 
         } catch (error) {
             console.error("Lỗi API createVehicle:", error);
-
-            // SỬ DỤNG HÀM TÁI SỬ DỤNG Ở ĐÂY (Chỉ cần 1 dòng)
-            const message = getErrorMessage(error, "Không thể lưu thông tin xe lúc này.");
-
-            // Bắn toast thông báo
-            showToast('error', message);
-        } finally {
-            setIsSubmitting(false); // Tắt cờ
-        }
-    };
-
-    const handleUpdateVehicle = async (updatedData, imageFile) => { // Nhận thêm imageFile
-        try {
-            setIsSubmitting(true);
-            const formData = new FormData();
-
-            // Không truyền licensePlate vì API thường không cho phép đổi khóa chính
-            formData.append('brand', updatedData.brand);
-            formData.append('model', updatedData.model);
-            formData.append('manufacture_year', updatedData.manufacture_year);
-
-            // Gắn file ảnh nếu người dùng có chọn ảnh mới
-            if (imageFile) {
-                formData.append('image', imageFile);
-            }
-
-            // Gọi API: Đảm bảo trong vehicleApi.js bạn có hàm update tương ứng
-            await vehicleApi.updateVehicle(updatedData.id, formData);
-
-            setEditingVehicle(null);
-            showToast('success', 'Cập nhật thông tin xe thành công!');
-            await fetchVehicles();
-        } catch (error) {
-            console.error("Lỗi API updateVehicle:", error);
-
-            // SỬ DỤNG HÀM TÁI SỬ DỤNG Ở ĐÂY (Chỉ cần 1 dòng)
             const message = getErrorMessage(error, "Không thể lưu thông tin xe lúc này.");
             showToast('error', message);
         } finally {
@@ -109,15 +96,38 @@ export default function VehicleManagement() {
         }
     };
 
-    // 4. HÀM GỌI API XÓA XE
+    const handleUpdateVehicle = async (updatedData, imageFile) => {
+        try {
+            setIsSubmitting(true);
+            const formData = new FormData();
+
+            formData.append('brand', updatedData.brand);
+            formData.append('model', updatedData.model);
+            formData.append('manufacture_year', updatedData.manufacture_year);
+
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+
+            await vehicleApi.updateVehicle(updatedData.id, formData);
+
+            setEditingVehicle(null);
+            showToast('success', 'Cập nhật thông tin xe thành công!');
+            await fetchVehicles();
+        } catch (error) {
+            console.error("Lỗi API updateVehicle:", error);
+            const message = getErrorMessage(error, "Không thể lưu thông tin xe lúc này.");
+            showToast('error', message);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const handleDeleteVehicle = async (vehicleId) => {
         try {
             setIsSubmitting(true);
-
-            // Gọi API Xóa (Bạn cần viết thêm hàm deleteVehicle trong vehicleApi.js)
             // await vehicleApi.deleteVehicle(vehicleId);
-
-            setEditingVehicle(null); // Đóng modal
+            setEditingVehicle(null);
             showToast('success', 'Đã xóa xe khỏi danh sách!');
             await fetchVehicles();
         } catch (error) {
@@ -131,7 +141,7 @@ export default function VehicleManagement() {
     return (
         <div className="w-full min-h-screen bg-gray-50 pb-12 relative overflow-hidden">
 
-            {/* --- UI TOAST THÔNG BÁO GÓC TRÊN CÙNG BÊN PHẢI --- */}
+            {/* --- UI TOAST THÔNG BÁO --- */}
             <div className={`fixed top-5 right-5 z-[9999] transition-all duration-500 transform ${toast.show ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
                 {toast.show && (
                     <div className={`flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-2xl border ${toast.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
@@ -145,10 +155,9 @@ export default function VehicleManagement() {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSave={handleSaveNewVehicle}
-                isSubmitting={isSubmitting} // Truyền cờ này xuống để disable form
+                isSubmitting={isSubmitting}
             />
 
-            {/* 6. NHÚNG COMPONENT EDIT VÀO CUỐI TRANG */}
             <EditVehicleModal
                 isOpen={!!editingVehicle}
                 onClose={() => setEditingVehicle(null)}
@@ -158,22 +167,25 @@ export default function VehicleManagement() {
                 isSubmitting={isSubmitting}
             />
 
-            {/* ... KHU VỰC BANNER VÀ RENDER DANH SÁCH XE CỦA BẠN GIỮ NGUYÊN NHƯ CŨ ... */}
-            {/* (Chỗ này bạn cứ để nguyên code cũ của bạn là chạy mượt) */}
-            {/* KHU VỰC BANNER FULL WIDTH */}
+            {/* KHU VỰC BANNER ĐÃ ĐƯỢC CHUYỂN SANG ĐỘNG */}
             <div className="relative w-full h-[320px]">
                 <img
-                    src="https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=2070"
+                    src={pageContents.hero_bg_image?.value || "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=2070"}
                     alt="Garage Background"
                     className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/60 to-transparent flex flex-col justify-end pb-20 px-4 sm:px-6 lg:px-8">
                     <div className="max-w-7xl mx-auto w-full">
-                        <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-2 drop-shadow-md">
-                            Quản lý xe cá nhân
-                        </h1>
-                        <p className="text-gray-200 text-base md:text-lg max-w-xl">
-                            Theo dõi tình trạng, lịch sử bảo dưỡng và quản lý thông tin phương tiện của bạn một cách dễ dàng.
+                        <h1
+                            className="text-3xl md:text-4xl font-extrabold mb-2 drop-shadow-md"
+                            style={{ color: pageContents.hero_title?.color || '#ffffff' }}
+                            dangerouslySetInnerHTML={{ __html: pageContents.hero_title?.value || 'Quản lý xe cá nhân' }}
+                        />
+                        <p
+                            className="text-base md:text-lg max-w-xl"
+                            style={{ color: pageContents.hero_description?.color || '#e5e7eb' }}
+                        >
+                            {pageContents.hero_description?.value || 'Theo dõi tình trạng, lịch sử bảo dưỡng và quản lý thông tin phương tiện của bạn một cách dễ dàng.'}
                         </p>
                     </div>
                 </div>
@@ -195,7 +207,7 @@ export default function VehicleManagement() {
                     </div>
 
                     <button
-                        onClick={() => navigate('/vehicleManagement/addVehiclePage')} // Điều hướng sang route mới
+                        onClick={() => navigate('/vehicleManagement/addVehiclePage')}
                         className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors shadow-md hover:shadow-lg w-full sm:w-auto justify-center"
                     >
                         <Plus size={20} strokeWidth={2.5} />
@@ -251,7 +263,6 @@ export default function VehicleManagement() {
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            // Điều hướng sang trang edit kèm theo ID của xe
                                             navigate(`/vehicleManagement/edit/${vehicle.id}`);
                                         }}
                                         className="cursor-pointer mt-auto w-full flex items-center justify-center gap-2 bg-gray-50 hover:bg-blue-500 text-gray-700 hover:text-white border border-gray-200 hover:border-blue-200 font-semibold py-2.5 rounded-lg transition-colors"
