@@ -10,6 +10,8 @@ import Pagination from '../../components/common/Pagination';
 import { toast } from 'react-toastify';
 import { serviceApi } from '../../api/serviceApi';
 import ServiceDetailModal from './ServiceDetailModal';
+import PaymentQRCodeModal from './PaymentQRCodeModal';
+import { paymentApi } from '../../api/paymentApi';
 
 export default function MyAppointmentHistory() {
     const navigate = useNavigate();
@@ -24,6 +26,10 @@ export default function MyAppointmentHistory() {
     const [isServiceLoading, setIsServiceLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedServiceData, setSelectedServiceData] = useState(null);
+
+    // State cho Modal Thanh toán
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [paymentData, setPaymentData] = useState(null);
 
     const listTopRef = useRef(null);
 
@@ -82,6 +88,7 @@ export default function MyAppointmentHistory() {
                         payment_status: repairOrder?.payment_status || 'PENDING',
                         payment_date: repairOrder?.date || null,
                         has_repair_order: !!repairOrder,
+                        orderId: repairOrder?.id || null,
                         vehicle: {
                             id: vehicle.id,
                             licensePlate: vehicle.licensePlate,
@@ -179,8 +186,38 @@ export default function MyAppointmentHistory() {
         }
     };
 
-    const handlePaymentClick = (apptId) => {
-        toast.info("Chức năng thanh toán đang được xử lý...");
+    const handlePaymentClick = async (orderId) => {
+        // Hiển thị loading toast
+        const toastId = toast.loading("Đang khởi tạo mã thanh toán an toàn...");
+
+        try {
+            // Gọi API lên Backend
+            const response = await paymentApi.generateQR(orderId);
+            const data = response.data || response; // Tùy cách cấu hình interceptor của bạn
+
+            // Backend trả về: qrUrl, orderCode, amount. Ta thêm duration (15 phút = 900 giây)
+            setPaymentData({
+                orderCode: data.orderCode,
+                qrUrl: data.qrUrl,
+                amount: data.amount,
+                endTime: data.endTime
+            });
+
+            // Tắt toast loading và mở Modal
+            toast.dismiss(toastId);
+            setIsPaymentModalOpen(true);
+
+            // TODO: Chỗ này sau này sẽ gọi hàm startPolling(apptId) để check tiền
+
+        } catch (error) {
+            console.error("Lỗi khi tạo QR:", error?.response);
+            toast.update(toastId, {
+                render: "Không thể tạo mã thanh toán. Vui lòng thử lại!",
+                type: "error",
+                isLoading: false,
+                autoClose: 3000
+            });
+        }
     };
 
     const filterTabs = [
@@ -412,7 +449,7 @@ export default function MyAppointmentHistory() {
 
                                                     {appt.payment_status !== 'PAYED' && (
                                                         <button
-                                                            onClick={() => handlePaymentClick(appt.id)}
+                                                            onClick={() => handlePaymentClick(appt.orderId)}
                                                             className="w-full sm:w-auto px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold rounded-md shadow-lg shadow-orange-500/30 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer border-2 border-orange-600"
                                                         >
                                                             <CreditCard size={18} />
@@ -443,6 +480,12 @@ export default function MyAppointmentHistory() {
                 serviceData={selectedServiceData}
             />
 
+            {/* ===== MODAL THANH TOÁN QR CODE ===== */}
+            <PaymentQRCodeModal
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+                paymentData={paymentData}
+            />
         </div>
     );
 }
