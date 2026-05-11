@@ -12,6 +12,7 @@ import { serviceApi } from '../../api/serviceApi';
 import ServiceDetailModal from './ServiceDetailModal';
 import PaymentQRCodeModal from './PaymentQRCodeModal';
 import { paymentApi } from '../../api/paymentApi';
+import Swal from 'sweetalert2';
 
 export default function MyAppointmentHistory() {
     const navigate = useNavigate();
@@ -197,6 +198,7 @@ export default function MyAppointmentHistory() {
 
             // Backend trả về: qrUrl, orderCode, amount. Ta thêm duration (15 phút = 900 giây)
             setPaymentData({
+                orderId: orderId,
                 orderCode: data.orderCode,
                 qrUrl: data.qrUrl,
                 amount: data.amount,
@@ -218,6 +220,28 @@ export default function MyAppointmentHistory() {
                 autoClose: 3000
             });
         }
+    };
+
+    const handlePaymentSuccess = () => {
+        // 1. Đóng Modal quét mã QR
+        setIsPaymentModalOpen(false);
+
+        // 2. Bắn pháo hoa báo thành công bằng SweetAlert2
+        Swal.fire({
+            title: 'Thanh toán thành công!',
+            text: 'Hệ thống đã nhận được tiền và cập nhật đơn hàng của bạn.',
+            icon: 'success',
+            confirmButtonText: 'Tuyệt vời',
+            confirmButtonColor: '#059669', // Mã màu emerald-600 cho hợp tông giao diện
+            timer: 4000, // Tự động đóng sau 4 giây (khách không bấm cũng tự tắt)
+            timerProgressBar: true, // Hiện thanh thời gian chạy lùi dưới đáy
+            showClass: {
+                popup: 'animate__animated animate__fadeInDown' // Hiệu ứng rơi xuống (tùy chọn)
+            }
+        });
+
+        // 3. Gọi API load lại danh sách để đổi trạng thái thành ĐÃ THANH TOÁN
+        fetchHistory();
     };
 
     const filterTabs = [
@@ -485,6 +509,7 @@ export default function MyAppointmentHistory() {
                 isOpen={isPaymentModalOpen}
                 onClose={() => setIsPaymentModalOpen(false)}
                 paymentData={paymentData}
+                onSuccess={handlePaymentSuccess}
             />
         </div>
     );
