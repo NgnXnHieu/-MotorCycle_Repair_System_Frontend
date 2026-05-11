@@ -3,6 +3,7 @@ import {
     X, Timer, AlertCircle, RefreshCcw,
     Banknote, Hash, ShieldAlert, CheckCircle2
 } from 'lucide-react';
+import { paymentApi } from '../../api/paymentApi';
 
 export default function PaymentQRCodeModal({
     isOpen,
@@ -51,6 +52,36 @@ export default function PaymentQRCodeModal({
 
         return () => clearInterval(timerId); // Cleanup
     }, [isOpen, paymentData]);
+
+    // THÊM MỚI: USE-EFFECT XỬ LÝ POLLING 3 GIÂY
+    useEffect(() => {
+        // Nếu form không mở, hoặc đã hết hạn, hoặc không có orderId thì KHÔNG chạy polling
+        if (!isOpen || isExpired || !paymentData?.orderId) return;
+
+        const checkPaymentStatus = async () => {
+            try {
+                // Gọi API kiểm tra
+                const response = await paymentApi.checkStatus(paymentData.orderId);
+                const isPaid = response.data || response; // Tùy cấu trúc axios của bạn trả về
+
+                if (isPaid === true) {
+                    onSuccess(); // Gọi hàm thành công để đóng form và báo Toast
+                }
+            } catch (error) {
+                console.error("Lỗi khi polling kiểm tra thanh toán:", error);
+            }
+        };
+
+        // Chạy lần đầu tiên ngay lập tức (không cần chờ 3s)
+        checkPaymentStatus();
+
+        // Cài đặt lặp lại sau mỗi 3 giây (3000ms)
+        const intervalId = setInterval(checkPaymentStatus, 3000);
+
+        // CLEANUP: Tự động dọn dẹp interval khi đóng form hoặc khi đã hết hạn QR
+        return () => clearInterval(intervalId);
+
+    }, [isOpen, isExpired, paymentData, onSuccess]);
 
     // Format thời gian thành MM:SS
     const formatTime = (seconds) => {

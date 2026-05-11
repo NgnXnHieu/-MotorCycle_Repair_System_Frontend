@@ -23,6 +23,8 @@ import { serviceApi } from '../../api/serviceApi';
 import { categoryApi } from '../../api/categoryApi';
 import { itemApi } from '../../api/itemApi';
 import { useNavigate } from 'react-router-dom';
+import PaymentQRCodeModal from '../customer/PaymentQRCodeModal';
+import { paymentApi } from '../../api/paymentApi';
 
 // IMPORT MODAL CHI TIẾT DỊCH VỤ VỪA TẠO
 import ServiceDetailModal from '../customer/ServiceDetailModal';
@@ -58,6 +60,10 @@ const AppointmentManagement = () => {
     const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
     const [selectedServiceData, setSelectedServiceData] = useState(null);
     const [isServiceLoading, setIsServiceLoading] = useState(false);
+
+    // ================= STATES CHO THANH TOÁN =================
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [paymentData, setPaymentData] = useState(null);
 
     // ================= STATES CHO MODAL ĐÁNH GIÁ (GIỮ NGUYÊN) =================
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -269,6 +275,82 @@ const AppointmentManagement = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Hàm gọi khi chọn phương thức thanh toán
+    const handlePaymentChoice = async (orderId) => {
+        const result = await Swal.fire({
+            title: 'Chọn hình thức thanh toán',
+            text: 'Vui lòng chọn hình thức thanh toán cho hóa đơn này.',
+            icon: 'question',
+            showDenyButton: true,
+            showCancelButton: true,
+            confirmButtonText: '📱 Chuyển khoản QR',
+            denyButtonText: '💵 Tiền mặt',
+            cancelButtonText: 'Đóng',
+            confirmButtonColor: '#4f46e5', // Màu xanh Indigo
+            denyButtonColor: '#16a34a',    // Màu xanh lá
+        });
+
+        if (result.isConfirmed) {
+            // 1. NẾU CHỌN CHUYỂN KHOẢN -> MỞ MODAL QR
+            try {
+                Swal.showLoading();
+                const response = await paymentApi.generateQR(orderId);
+                const data = response.data || response;
+
+                setPaymentData({
+                    orderId: orderId,
+                    orderCode: data.orderCode,
+                    qrUrl: data.qrUrl,
+                    amount: data.amount,
+                    endTime: data.endTime
+                });
+
+                Swal.close();
+                setIsPaymentModalOpen(true); // Bật form QR Code
+            } catch (error) {
+                console.error("Lỗi khi tạo QR:", error);
+                Swal.fire('Lỗi', 'Không thể tạo mã QR lúc này. Vui lòng thử lại!', 'error');
+            }
+
+        } else if (result.isDenied) {
+            // 2. NẾU CHỌN TIỀN MẶT -> XÁC NHẬN VÀ GỌI API TRỰC TIẾP
+            const confirmCash = await Swal.fire({
+                title: 'Xác nhận thu tiền mặt',
+                text: 'Xác nhận bạn đã thu đủ tiền mặt từ khách hàng?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Xác nhận đã thu',
+                cancelButtonText: 'Hủy'
+            });
+
+            if (confirmCash.isConfirmed) {
+                try {
+                    Swal.showLoading();
+
+                    // LƯU Ý: Chỗ này bạn tự gọi API cập nhật trạng thái thanh toán tiền mặt ở Backend nhé
+                    await paymentApi.payByCash(orderId);
+
+                    handlePaymentSuccess(); // Báo thành công
+                } catch (error) {
+                    Swal.fire('Lỗi', 'Lỗi khi xác nhận thanh toán tiền mặt!', 'error');
+                }
+            }
+        }
+    };
+
+    // Hàm gọi khi thanh toán thành công (Dùng chung cho cả Tiền mặt và Chuyển khoản)
+    const handlePaymentSuccess = () => {
+        setIsPaymentModalOpen(false); // Đóng Modal QR (nếu đang mở)
+        Swal.fire({
+            title: 'Thanh toán thành công!',
+            text: 'Giao dịch đã được hệ thống ghi nhận.',
+            icon: 'success',
+            timer: 3000,
+            showConfirmButton: false
+        });
+        setRefreshKey(prev => prev + 1); // Gọi lệnh reload lại danh sách để đổi trạng thái
     };
 
     return (
@@ -514,25 +596,39 @@ const AppointmentManagement = () => {
                                                         </div>
                                                     </div>
 
-                                                    {/* Thanh toán */}
-                                                    <div className="flex items-start gap-3 text-sm pl-1 pt-3 border-t border-blue-200">
-                                                        {repairOrder?.payment_status === 'PAID' ? (
-                                                            <FaCheckCircle className="text-green-600 text-base mt-0.5 shrink-0" />
-                                                        ) : (
-                                                            <FaTimesCircle className="text-yellow-600 text-base mt-0.5 shrink-0" />
-                                                        )}
-                                                        <div>
-                                                            <span className="font-black text-gray-900 uppercase block mb-1">Thanh toán:</span>
-                                                            {repairOrder?.payment_status === 'PAID' ? (
-                                                                <span className="bg-green-100 text-green-800 border-2 border-green-300 text-xs px-2 py-1 rounded-sm font-bold shadow-sm uppercase tracking-wide">
-                                                                    ĐÃ THANH TOÁN
-                                                                </span>
+                                                    {/* Thanh toán & Nút hành động */}
+                                                    <div className="col-span-1 md:col-span-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-sm pl-1 pt-3 border-t border-blue-200">
+                                                        <div className="flex items-start gap-3">
+                                                            {repairOrder?.payment_status === 'PAYED' ? (
+                                                                <FaCheckCircle className="text-green-600 text-base mt-0.5 shrink-0" />
                                                             ) : (
-                                                                <span className="bg-yellow-100 text-yellow-800 border-2 border-yellow-300 text-xs px-2 py-1 rounded-sm font-bold shadow-sm uppercase tracking-wide">
-                                                                    CHƯA THANH TOÁN
-                                                                </span>
+                                                                <FaTimesCircle className="text-yellow-600 text-base mt-0.5 shrink-0" />
                                                             )}
+                                                            <div>
+                                                                <span className="font-black text-gray-900 uppercase block mb-1">Thanh toán:</span>
+                                                                {repairOrder?.payment_status === 'PAYED' ? (
+                                                                    <span className="bg-green-100 text-green-800 border-2 border-green-300 text-xs px-2 py-1 rounded-sm font-bold shadow-sm uppercase tracking-wide">
+                                                                        ĐÃ THANH TOÁN
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="bg-yellow-100 text-yellow-800 border-2 border-yellow-300 text-xs px-2 py-1 rounded-sm font-bold shadow-sm uppercase tracking-wide">
+                                                                        CHƯA THANH TOÁN
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
+
+                                                        {/* HIỆN NÚT THANH TOÁN NẾU CÓ TIỀN VÀ CHƯA THANH TOÁN */}
+                                                        {repairOrder?.payment_status !== 'PAYED' && repairOrder?.total_price > 0 && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handlePaymentChoice(repairOrder.id)}
+                                                                className="cursor-pointer bg-red-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-sm text-sm font-bold uppercase tracking-wide shadow-md transition-colors flex items-center gap-2 active:scale-95 w-full sm:w-auto justify-center"
+                                                            >
+                                                                <FaMoneyBillWave size={16} />
+                                                                Thanh toán ngay
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
                                             ) : null;
@@ -619,6 +715,14 @@ const AppointmentManagement = () => {
                     setTimeout(() => setSelectedServiceData(null), 200); // Clear data mượt mà
                 }}
                 serviceData={selectedServiceData}
+            />
+
+            {/* ===== MODAL THANH TOÁN QR CODE ===== */}
+            <PaymentQRCodeModal
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+                paymentData={paymentData}
+                onSuccess={handlePaymentSuccess}
             />
 
         </div>

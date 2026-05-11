@@ -10,6 +10,8 @@ import { shiftInBranchApi } from '../../api/shiftInBranchApi';
 import { appointmentApi } from '../../api/appointmentApi';
 import { serviceApi } from '../../api/serviceApi'; // <-- Thêm import serviceApi
 import Pagination from '../../components/common/Pagination';
+import PaymentQRCodeModal from '../customer/PaymentQRCodeModal';
+import { paymentApi } from '../../api/paymentApi';
 
 // THÊM IMPORT MODAL CHI TIẾT DỊCH VỤ
 import ServiceDetailModal from '../customer/ServiceDetailModal'; // Hãy sửa đường dẫn cho đúng với dự án của bạn
@@ -39,6 +41,10 @@ const MechanicAppointmentManagement = () => {
     const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
     const [selectedServiceData, setSelectedServiceData] = useState(null);
     const [isServiceLoading, setIsServiceLoading] = useState(false);
+
+    // ================= STATES CHO THANH TOÁN =================
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [paymentData, setPaymentData] = useState(null);
 
     // ================= 4. UTILS & HELPER =================
     const translateStatus = (apiStatus, isEmergency = false) => {
@@ -132,7 +138,7 @@ const MechanicAppointmentManagement = () => {
 
                 const res = await appointmentApi.getAppointmentMechanic(filterForm);
                 const responseData = res?.data || res;
-
+                console.log(res)
                 setAppointments(responseData?.content || []);
                 setTotalPages(responseData?.page?.totalPages || 0);
 
@@ -218,33 +224,83 @@ const MechanicAppointmentManagement = () => {
         }
     };
 
+    // Xử lý khi nhấn nút THU TIỀN
     const handlePayment = async (repairOrderId) => {
         const result = await Swal.fire({
-            title: 'Kích hoạt thanh toán',
-            text: 'Vui lòng chọn hình thức thanh toán của khách hàng:',
-            icon: 'info',
+            title: 'Chọn hình thức thanh toán',
+            text: 'Vui lòng chọn hình thức thanh toán cho hóa đơn này.',
+            icon: 'question',
             showDenyButton: true,
             showCancelButton: true,
-            confirmButtonText: '<i class="fas fa-wallet"></i> Tiền mặt',
-            denyButtonText: '<i class="fas fa-credit-card"></i> Chuyển khoản',
-            cancelButtonText: 'Hủy',
-            confirmButtonColor: '#22c55e',
-            denyButtonColor: '#3b82f6',
+            confirmButtonText: '<i class="fas fa-qrcode"></i> Chuyển khoản QR',
+            denyButtonText: '<i class="fas fa-money-bill-wave"></i> Tiền mặt',
+            cancelButtonText: 'Đóng',
+            confirmButtonColor: '#4f46e5', // Xanh dương
+            denyButtonColor: '#16a34a',    // Xanh lá
             borderRadius: '0'
         });
 
-        if (result.isConfirmed || result.isDenied) {
-            const paymentMethod = result.isConfirmed ? 'CASH' : 'TRANSFER';
+        if (result.isConfirmed) {
+            // 1. NẾU CHỌN CHUYỂN KHOẢN QR
             try {
-                // await appointmentApi.updatePaymentStatus(repairOrderId, { method: paymentMethod });
-                await Swal.fire({
-                    icon: 'success', title: 'Thanh toán thành công!', text: `Đã xác nhận qua ${paymentMethod === 'CASH' ? 'Tiền mặt' : 'Chuyển khoản'}.`, timer: 2000, showConfirmButton: false
+                Swal.showLoading();
+                const response = await paymentApi.generateQR(repairOrderId);
+                const data = response.data || response;
+
+                setPaymentData({
+                    orderId: repairOrderId,
+                    orderCode: data.orderCode,
+                    qrUrl: data.qrUrl,
+                    amount: data.amount,
+                    endTime: data.endTime
                 });
-                setRefreshKey(prev => prev + 1);
+
+                Swal.close();
+                setIsPaymentModalOpen(true); // Bật form QR lên
             } catch (error) {
-                Swal.fire('Lỗi', 'Không thể xử lý thanh toán.', 'error');
+                console.error("Lỗi khi tạo QR:", error?.response);
+                Swal.fire({ title: 'Lỗi', text: 'Không thể tạo mã QR lúc này. Vui lòng thử lại!', icon: 'error', borderRadius: '0' });
+            }
+
+        } else if (result.isDenied) {
+            // 2. NẾU CHỌN TIỀN MẶT
+            const confirmCash = await Swal.fire({
+                title: 'Xác nhận thu tiền mặt',
+                text: 'Xác nhận bạn đã thu đủ tiền mặt từ khách hàng?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Đã thu tiền',
+                cancelButtonText: 'Hủy',
+                confirmButtonColor: '#16a34a',
+                borderRadius: '0'
+            });
+
+            if (confirmCash.isConfirmed) {
+                try {
+                    Swal.showLoading();
+                    // Gọi API thanh toán tiền mặt (Đảm bảo file paymentApi.js của bạn có hàm payByCash này nhé)
+                    await paymentApi.payByCash(repairOrderId);
+                    handlePaymentSuccess(); // Báo thành công và tự động reload
+                } catch (error) {
+                    console.error("Lỗi thanh toán tiền mặt:", error);
+                    Swal.fire({ title: 'Lỗi', text: 'Thanh toán thất bại, vui lòng thử lại!', icon: 'error', borderRadius: '0' });
+                }
             }
         }
+    };
+
+    // Hàm chung gọi khi thanh toán thành công (Tiền mặt hoặc QR Polling)
+    const handlePaymentSuccess = () => {
+        setIsPaymentModalOpen(false); // Đóng Modal QR (nếu đang mở)
+        Swal.fire({
+            title: 'Thanh toán thành công!',
+            text: 'Giao dịch đã được hệ thống ghi nhận.',
+            icon: 'success',
+            timer: 3000,
+            showConfirmButton: false,
+            borderRadius: '0'
+        });
+        setRefreshKey(prev => prev + 1); // F5 lại dữ liệu ngầm để ẩn nút Thu tiền
     };
 
     // ================= 8. RENDER =================
@@ -483,14 +539,14 @@ const MechanicAppointmentManagement = () => {
                                                     </div>
 
                                                     <div className="flex items-start gap-3 text-sm pl-1">
-                                                        {repairOrder?.payment_status === 'PAID' ? (
+                                                        {repairOrder?.payment_status === 'PAYED' ? (
                                                             <FaCheckCircle className="text-green-600 text-base mt-0.5 shrink-0" />
                                                         ) : (
                                                             <FaTimesCircle className="text-yellow-600 text-base mt-0.5 shrink-0" />
                                                         )}
                                                         <div>
                                                             <span className="font-black text-gray-900 uppercase block mb-1">Thanh toán:</span>
-                                                            {repairOrder?.payment_status === 'PAID' ? (
+                                                            {repairOrder?.payment_status === 'PAYED' ? (
                                                                 <span className="bg-green-100 text-green-800 border-2 border-green-300 text-xs px-2 py-1 rounded-sm font-bold shadow-sm uppercase tracking-wide inline-block">
                                                                     ĐÃ THANH TOÁN
                                                                 </span>
@@ -586,6 +642,16 @@ const MechanicAppointmentManagement = () => {
                 }}
                 serviceData={selectedServiceData}
             />
+
+            {/* ===== MODAL THANH TOÁN QR CODE ===== */}
+            <PaymentQRCodeModal
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+                paymentData={paymentData}
+                onSuccess={handlePaymentSuccess}
+            />
+
+
         </div>
     );
 };
