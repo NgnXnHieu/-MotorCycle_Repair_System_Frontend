@@ -26,6 +26,7 @@ export default function Navbar() {
         const fetchNavbarData = async () => {
             try {
                 const contentRes = await contentApi.getContentList('NAVBAR');
+                console.log(contentRes)
                 const rawContentList = contentRes.data || contentRes;
                 const menu = await menuApi.getMenuById(4)
                 setMenu(menu)

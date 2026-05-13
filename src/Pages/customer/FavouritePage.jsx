@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, ArrowLeft, Eye, PackageX, Trash2, AlertCircle, X, HeartOff } from 'lucide-react';
+import { Heart, ArrowLeft, Eye, PackageX, Trash2, HeartOff, LayoutGrid } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { itemApi } from '../../api/itemApi';
 import Pagination from '../../components/common/Pagination';
@@ -24,8 +24,7 @@ export default function FavouritePage() {
         setIsLoading(true);
         setError(null);
         try {
-            // Giả sử API có hỗ trợ truyền page (nếu không bạn bỏ tham số page đi)
-            const response = await itemApi.getMyFavouriteList({ page, size: 12 });
+            const response = await itemApi.getMyFavouriteList({ page, size: 15 });
             const dataList = response.content || response.data?.content || [];
 
             const normalizedData = dataList.map(record => ({
@@ -52,7 +51,7 @@ export default function FavouritePage() {
 
     // --- HÀM MỞ MODAL XÁC NHẬN ---
     const openConfirmModal = (e, product) => {
-        e.stopPropagation(); // Ngăn sự kiện click nhảy sang trang chi tiết
+        e.stopPropagation();
         setSelectedProduct(product);
         setIsModalOpen(true);
     };
@@ -63,10 +62,7 @@ export default function FavouritePage() {
 
         setIsDeleting(true);
         try {
-            // Sử dụng ID của bản ghi favourite (favouriteRecordId) hoặc ID item tùy theo API của bạn yêu cầu
             await itemApi.removeToFavouriteList(selectedProduct.id || selectedProduct.id);
-
-            // Xóa khỏi state để UI cập nhật
             setFavorites(prev => prev.filter(item => item.id !== selectedProduct.id));
             setIsModalOpen(false);
             setSelectedProduct(null);
@@ -78,20 +74,10 @@ export default function FavouritePage() {
         }
     };
 
-    // --- HÀM ĐIỀU HƯỚNG ---
-    const handleNavigateToDetail = (productId) => {
-        navigate(`/itemDetailPage/${productId}`);
-    };
+    const handleNavigateToDetail = (productId) => navigate(`/itemDetailPage/${productId}`);
+    const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
+    const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
-    const handlePageChange = (pageNumber) => {
-        setCurrentPage(pageNumber);
-    };
-
-    const formatPrice = (price) => {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-    };
-
-    // --- MÀU SẮC THƯƠNG HIỆU (Đồng bộ từ SparePartsPage) ---
     const getBrandStyle = (brandName) => {
         const name = (typeof brandName === 'object' ? brandName?.name : brandName) || '';
         const lowerName = name.toLowerCase();
@@ -107,31 +93,27 @@ export default function FavouritePage() {
     return (
         <div className="min-h-screen bg-gray-50 pb-16 font-sans relative">
 
-            {/* 1. MODAL XÁC NHẬN (Được làm đẹp hơn) */}
+            {/* MODAL XÁC NHẬN */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => !isDeleting && setIsModalOpen(false)}></div>
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-7 relative z-10 animate-in fade-in zoom-in duration-200">
-                        <button onClick={() => setIsModalOpen(false)} className="absolute top-5 right-5 text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors">
-                            <X size={20} />
-                        </button>
-
                         <div className="flex flex-col items-center text-center mb-6 mt-2">
                             <div className="bg-red-50 text-red-500 p-4 rounded-full mb-4">
                                 <HeartOff size={32} />
                             </div>
-                            <h3 className="text-2xl font-black text-gray-900 mb-2">Bỏ lưu sản phẩm</h3>
-                            <p className="text-gray-500 leading-relaxed">
+                            <h3 className="text-xl font-black text-gray-900 mb-2">Bỏ lưu sản phẩm</h3>
+                            <p className="text-gray-500 text-sm leading-relaxed">
                                 Bạn có chắc chắn muốn bỏ lưu <br /> <span className="font-bold text-gray-800">"{selectedProduct?.name}"</span>?
                             </p>
                         </div>
 
                         <div className="flex gap-3">
-                            <button disabled={isDeleting} onClick={() => setIsModalOpen(false)} className="flex-1 py-3.5 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">
+                            <button disabled={isDeleting} onClick={() => setIsModalOpen(false)} className="flex-1 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">
                                 Giữ lại
                             </button>
-                            <button disabled={isDeleting} onClick={handleConfirmUnsave} className={`flex-1 py-3.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 transition-colors shadow-lg shadow-red-600/20 flex justify-center items-center gap-2 ${isDeleting ? 'opacity-70' : ''}`}>
-                                {isDeleting ? 'Đang xử lý...' : 'Đồng ý bỏ lưu'}
+                            <button disabled={isDeleting} onClick={handleConfirmUnsave} className={`flex-1 py-3 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 transition-colors shadow-lg shadow-red-600/20 flex justify-center items-center gap-2 ${isDeleting ? 'opacity-70' : ''}`}>
+                                {isDeleting ? 'Đang xử lý...' : 'Đồng ý'}
                             </button>
                         </div>
                     </div>
@@ -141,17 +123,27 @@ export default function FavouritePage() {
             {/* HEADER */}
             <div className="bg-white border-b border-gray-200 py-6 mb-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center gap-4 mb-2">
-                        <button onClick={() => navigate(-1)} className="p-2 bg-gray-100 rounded-full text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer">
-                            <ArrowLeft size={20} />
-                        </button>
-                        <div>
-                            <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3">
-                                <Heart className="text-red-500" size={32} fill="currentColor" />
-                                Danh sách yêu thích
-                            </h1>
-                            <p className="text-gray-500 mt-1 font-medium text-sm ml-11">Những phụ tùng và linh kiện bạn đã quan tâm</p>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <button onClick={() => navigate(-1)} className="p-2 bg-gray-100 rounded-full text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer shrink-0">
+                                <ArrowLeft size={20} />
+                            </button>
+                            <div>
+                                <h1 className="text-2xl sm:text-3xl font-black text-gray-900 flex items-center gap-3">
+                                    <Heart className="text-red-500" size={28} fill="currentColor" />
+                                    Sản phẩm yêu thích
+                                </h1>
+                                <p className="text-gray-500 mt-1 font-medium text-sm sm:ml-10">Bạn đang có {favorites.length} sản phẩm được lưu</p>
+                            </div>
                         </div>
+
+                        <button
+                            onClick={() => navigate('/sparePartsPage')}
+                            className="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl hover:bg-blue-700 transition-colors shadow-md sm:w-auto w-full"
+                        >
+                            <LayoutGrid size={18} />
+                            Xem danh sách phụ tùng
+                        </button>
                     </div>
                 </div>
             </div>
@@ -169,80 +161,77 @@ export default function FavouritePage() {
                         </div>
                         <h2 className="text-2xl font-bold text-gray-800 mb-2">Chưa có sản phẩm yêu thích</h2>
                         <p className="text-gray-500 mb-6 max-w-md">Hãy khám phá gian hàng và lưu lại những sản phẩm bạn muốn mua sau nhé!</p>
-                        <button onClick={() => navigate('/spare-parts')} className="bg-blue-600 text-white font-bold py-3 px-8 rounded-2xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">
-                            Khám phá phụ tùng
+                        <button onClick={() => navigate('/sparePartsPage')} className="bg-blue-600 text-white font-bold py-3 px-8 rounded-2xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">
+                            Khám phá phụ tùng ngay
                         </button>
                     </div>
                 ) : (
                     <>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5">
                             {favorites.map((product) => {
                                 const brandName = typeof product.brand === 'object' ? product.brand?.name : product.brand;
+
+                                // KIỂM TRA HẾT HÀNG
+                                const isOutOfStock = (product.totalStockQuantity || 0) === 0;
 
                                 return (
                                     <div
                                         key={product.id}
                                         onClick={() => handleNavigateToDetail(product.id)}
-                                        className="group bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 flex flex-col relative overflow-hidden cursor-pointer"
+                                        // Thêm lớp grayscale nếu hết hàng
+                                        className={`group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col relative overflow-hidden cursor-pointer ${isOutOfStock ? 'grayscale-[0.8] opacity-90' : ''}`}
                                     >
-                                        {/* PHẦN ẢNH NỔI BẬT */}
-                                        <div className="relative h-60 w-full overflow-hidden bg-gray-50 flex items-center justify-center">
+                                        <div className="relative h-44 w-full overflow-hidden bg-gray-100 flex items-center justify-center border-b border-gray-100">
                                             {product.imageUrl ? (
                                                 <img
                                                     src={product.imageUrl}
                                                     alt={product.name}
-                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                                 />
                                             ) : (
-                                                <PackageX size={48} className="text-gray-300" />
+                                                <PackageX size={40} className="text-gray-300" />
                                             )}
 
-                                            {/* NÚT THAO TÁC (Tim -> Thùng rác khi Hover) */}
-                                            <button
-                                                onClick={(e) => openConfirmModal(e, product)}
-                                                className="absolute top-4 right-4 bg-white/90 backdrop-blur-md p-2.5 rounded-full text-red-500 hover:bg-red-50 hover:text-red-600 transition-all z-20 shadow-sm group/btn"
-                                                title="Bỏ lưu"
-                                            >
-                                                {/* Mặc định hiện tim, khi hover nút này thì ẩn tim hiện thùng rác */}
-                                                <Heart className="block group-hover/btn:hidden" fill="currentColor" size={18} />
-                                                <Trash2 className="hidden group-hover/btn:block" size={18} />
-                                            </button>
-
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                            {/* HIỂN THỊ BADGE NẾU HẾT HÀNG */}
+                                            {isOutOfStock && (
+                                                <div className="absolute top-2 left-2 bg-rose-600/90 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-md z-10 shadow-sm">
+                                                    Hết hàng
+                                                </div>
+                                            )}
                                         </div>
 
-                                        {/* PHẦN NỘI DUNG THẺ */}
-                                        <div className="p-5 flex flex-col flex-1 bg-white relative">
-                                            <div className="flex justify-between items-start mb-3">
-                                                <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border ${getBrandStyle(brandName)}`}>
-                                                    {brandName || 'Sản phẩm'}
+                                        <div className="p-4 flex flex-col flex-1 bg-white relative">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${getBrandStyle(brandName)}`}>
+                                                    {brandName || 'Phụ Tùng'}
                                                 </span>
                                             </div>
 
-                                            <h3 className="text-base font-bold text-gray-800 leading-snug mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                                            <h3 className="text-sm font-bold text-gray-800 leading-snug mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
                                                 {product.name}
                                             </h3>
 
-                                            {/* Dòng giá tiền và nút xem chi tiết */}
-                                            <div className="mt-auto pt-4 flex items-center justify-between border-t border-gray-50">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Giá bán lẻ</span>
-                                                    <span className="text-xl font-black text-red-600">
-                                                        {formatPrice(product.price)}
-                                                    </span>
-                                                </div>
-
-                                                <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner border border-blue-100">
-                                                    <Eye size={18} />
-                                                </div>
+                                            <div className="mt-auto mb-3">
+                                                <span className="block text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Giá bán lẻ</span>
+                                                {/* Làm mờ giá nếu hết hàng */}
+                                                <span className={`text-lg font-black ${isOutOfStock ? 'text-gray-500' : 'text-red-600'}`}>
+                                                    {formatPrice(product.price)}
+                                                </span>
                                             </div>
+
+                                            <button
+                                                onClick={(e) => openConfirmModal(e, product)}
+                                                className="w-full flex items-center justify-center gap-1.5 py-2 px-3 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white rounded-lg transition-colors text-xs font-bold border border-red-100 shadow-sm"
+                                            >
+                                                <Trash2 size={14} />
+                                                Bỏ yêu thích
+                                            </button>
                                         </div>
                                     </div>
                                 );
                             })}
                         </div>
 
-                        {/* PHÂN TRANG */}
                         {totalPages > 1 && (
                             <div className="mt-12 flex justify-center">
                                 <Pagination
