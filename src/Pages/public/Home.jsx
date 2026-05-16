@@ -1,12 +1,13 @@
 import HeroSection from "./Home/HeroSection";
 import QuickAccessCards from "./Home/QuickAccessCards";
 import ProductCard from "../../components/common/ProductCard";
-import { ArrowRight, ShoppingCart, Loader2, Sparkles, Wrench } from "lucide-react";
+// MỚI: Import thêm Flame icon
+import { ArrowRight, ShoppingCart, Loader2, Sparkles, Wrench, Flame } from "lucide-react";
 import { itemApi } from "../../api/itemApi";
 import { servicePackageApi } from "../../api/servicePackageApi";
 import { contentApi } from "../../api/contentApi";
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from "react-router-dom"; // Thêm Link từ react-router-dom
+import { useNavigate, Link } from "react-router-dom";
 import AnimatedBanners from "./Home/AnimatedBanners";
 import useSmartScroll from "../../components/common/useSmartScroll";
 
@@ -14,26 +15,28 @@ export default function Home() {
 
     const [items, setItems] = useState([]);
     const [services, setServices] = useState([]);
+    const [newestItems, setNewestItems] = useState([]);
     const [pageContent, setPageContent] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
     const navigate = useNavigate();
-
-    // useSmartScroll(isLoading)
 
     useEffect(() => {
         const fetchHomeData = async () => {
             try {
                 setIsLoading(true);
 
-                const [itemsData, serviceData, contentRes] = await Promise.all([
+                const [itemsData, serviceData, contentRes, newestItemsRes] = await Promise.all([
                     itemApi.getAllItems({ page: 0, size: 15 }),
                     servicePackageApi.getAll({ page: 0, size: 8 }),
-                    contentApi.getContentList('HOME')
+                    contentApi.getContentList('HOME'),
+                    itemApi.getTop5NewestItem()
                 ]);
 
                 setItems(itemsData.content || []);
                 setServices(serviceData.content || []);
+
+                setNewestItems(newestItemsRes.content || newestItemsRes.data || newestItemsRes || []);
 
                 const rawContentList = contentRes.data || contentRes;
 
@@ -73,7 +76,6 @@ export default function Home() {
     const handleViewServiceDetail = (id) => navigate(`/servicePackageDetailPage/${id}`);
 
     return (
-        // ĐỔI NỀN TRANG: Chuyển sang bg-slate-50 để làm nổi bật các khối màu trắng bên trong
         <div className="flex flex-col pb-16 w-full bg-slate-50 min-h-screen font-sans">
 
             {/* HERO SECTION */}
@@ -87,11 +89,10 @@ export default function Home() {
                 btn2Url={pageContent.HERO?.hero_btn_2?.url}
             />
 
-            {/* QUICK ACCESS */}
+            {/* QUICK ACCESS (TIỆN ÍCH) */}
             <div className="relative z-10 -mt-6 sm:-mt-10">
                 <QuickAccessCards
                     contentData={{
-                        // Truyền đủ 5 card
                         card_1_title: pageContent.QUICK_ACCESS?.card_1_title?.value,
                         card_1_img: pageContent.QUICK_ACCESS?.card_1_img?.value,
                         card_2_title: pageContent.QUICK_ACCESS?.card_2_title?.value,
@@ -106,8 +107,36 @@ export default function Home() {
                 />
             </div>
 
-            {/* MAIN CONTENT WRAPPER: Giới hạn chiều rộng và tạo khoảng cách cho các section */}
+            {/* MAIN CONTENT WRAPPER */}
             <div className="max-w-[90rem] mx-auto px-4 sm:px-6 w-full flex flex-col gap-10 mt-4">
+
+                {/* KHỐI TOP 5 SẢN PHẨM MỚI NHẤT (Nổi bật rực lửa) */}
+                {newestItems && newestItems.length > 0 && (
+                    <section className="bg-gradient-to-r from-orange-50 to-red-50 rounded-[2rem] p-6 sm:p-10 shadow-md border border-orange-200">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4 border-b border-orange-200/50 pb-6">
+                            <div>
+                                <h2 className="text-3xl font-extrabold text-red-600 tracking-tight flex items-center gap-3">
+                                    <Flame className="h-8 w-8 text-orange-500 fill-orange-500 animate-pulse" />
+                                    Sản Phẩm Mới - Đang Hot!
+                                </h2>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                            {newestItems.slice(0, 5).map(part => (
+                                <ProductCard
+                                    key={part.id}
+                                    name={part.name}
+                                    price={part.price}
+                                    image={part.imageUrl}
+                                    actionText="Chi tiết"
+                                    onAction={() => handleViewItemDetail(part.id)}
+                                    actionIcon={ArrowRight}
+                                />
+                            ))}
+                        </div>
+                    </section>
+                )}
 
                 {/* BANNERS: Nằm gọn gàng giữa trang */}
                 <AnimatedBanners
@@ -123,7 +152,7 @@ export default function Home() {
                     }}
                 />
 
-                {/* KHỐI 1: DANH SÁCH PHỤ TÙNG (CONTAINER MÀU TRẮNG ĐỘC LẬP) */}
+                {/* KHỐI 1: DANH SÁCH PHỤ TÙNG */}
                 <section className="bg-white rounded-[2rem] p-6 sm:p-10 shadow-sm border border-slate-200">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4 border-b border-slate-100 pb-6">
                         <div>
@@ -152,7 +181,7 @@ export default function Home() {
                     </div>
                 </section>
 
-                {/* KHỐI 2: ĐĂNG KÝ DỊCH VỤ (CONTAINER MÀU TRẮNG ĐỘC LẬP) */}
+                {/* KHỐI 2: ĐĂNG KÝ DỊCH VỤ */}
                 <section className="bg-white rounded-[2rem] p-6 sm:p-10 shadow-sm border border-slate-200">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4 border-b border-slate-100 pb-6">
                         <div>
@@ -166,7 +195,7 @@ export default function Home() {
                         </Link>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                         {services.map(service => (
                             <ProductCard
                                 key={service.id}

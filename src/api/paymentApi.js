@@ -22,5 +22,10 @@ export const paymentApi = {
     //Tạo mã thanh toán chuyển khoản cho servicePackage
     generateQRForServicePackage: (id) => {
         return axiosClient.get(`/payment/generate-QR/servicePackage/${id}`)
+    },
+
+    //Check status với customerPackage
+    checkStatusForCustomerPackage: (id) => {
+        return axiosClient.get(`/customerPackages/paymentStatus/${id}`)
     }
 }

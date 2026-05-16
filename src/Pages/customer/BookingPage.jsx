@@ -13,6 +13,11 @@ import { appointmentApi } from '../../api/appointmentApi';
 export default function BookingPage() {
     const [currentUser, setCurrentUser] = useState(null);
     const [formData, setFormData] = useState({ fullName: '', phone: '', licensePlate: '', brand: '', model: '' });
+
+    // State mới dành cho 2 ô biển số xe
+    const [licensePlateTop, setLicensePlateTop] = useState('');
+    const [licensePlateBottom, setLicensePlateBottom] = useState('');
+
     const [selectedDate, setSelectedDate] = useState(0);
     const [selectedShift, setSelectedShift] = useState(null);
 
@@ -36,29 +41,54 @@ export default function BookingPage() {
     const [shifts, setShifts] = useState([]);
     const [isShiftsLoading, setIsShiftsLoading] = useState(false);
 
-    // State quản lý việc hiển thị Form Xác nhận trước khi gọi API
     const [showConfirmModal, setShowConfirmModal] = useState(false);
 
     const [bookingStatus, setBookingStatus] = useState({
         isOpen: false,
-        type: '', // 'success' hoặc 'error'
+        type: '',
         message: ''
     });
 
     const location = useLocation()
     const navigate = useNavigate()
 
+    // Hàm tiện ích để tách biển số xe từ string có sẵn
+    const parseLicensePlate = (plateStr) => {
+        if (!plateStr) return { top: '', bottom: '' };
+
+        // Cắt bằng dấu trừ
+        const parts = plateStr.split('-');
+        if (parts.length >= 2) {
+            return {
+                top: parts[0].replace(/[\s-]/g, '').substring(0, 4),
+                bottom: parts[1].replace(/[\s-]/g, '').substring(0, 5)
+            };
+        } else {
+            // Xử lý fallback nếu string không có dấu trừ
+            const clean = plateStr.replace(/[\s-]/g, '');
+            return {
+                top: clean.substring(0, 4),
+                bottom: clean.substring(4, 9)
+            };
+        }
+    };
+
     useEffect(() => {
         const vehicle = location.state?.vehicle;
         if (vehicle) {
+            const parsed = parseLicensePlate(vehicle.licensePlate || "");
+            setLicensePlateTop(parsed.top);
+            setLicensePlateBottom(parsed.bottom);
+            const combinedPlate = (parsed.top || parsed.bottom) ? `${parsed.top}-${parsed.bottom}` : "";
+
             setFormData(prev => ({
                 ...prev,
-                licensePlate: vehicle.licensePlate || "",
+                licensePlate: combinedPlate,
                 brand: vehicle.brand || "",
                 model: vehicle.model || ""
             }));
         }
-    }, [])
+    }, [location.state])
 
     useEffect(() => {
         const fetchInitialBranch = async () => {
@@ -116,9 +146,14 @@ export default function BookingPage() {
     };
 
     const handleSelectVehicle = (vehicle) => {
+        const parsed = parseLicensePlate(vehicle.licensePlate || "");
+        setLicensePlateTop(parsed.top);
+        setLicensePlateBottom(parsed.bottom);
+        const combinedPlate = (parsed.top || parsed.bottom) ? `${parsed.top}-${parsed.bottom}` : "";
+
         setFormData(prev => ({
             ...prev,
-            licensePlate: vehicle.licensePlate || "",
+            licensePlate: combinedPlate,
             brand: vehicle.brand || "",
             model: vehicle.model || ""
         }));
@@ -210,6 +245,24 @@ export default function BookingPage() {
         }
     };
 
+    // Handler riêng cho input Biển số hàng trên
+    const handleLicensePlateTopChange = (e) => {
+        let val = e.target.value.toUpperCase().replace(/[\s-]/g, '');
+        if (val.length > 4) val = val.substring(0, 4);
+        setLicensePlateTop(val);
+        setFormData(prev => ({ ...prev, licensePlate: `${val}-${licensePlateBottom}` }));
+        if (errors.licensePlate) setErrors(prev => ({ ...prev, licensePlate: null }));
+    };
+
+    // Handler riêng cho input Biển số hàng dưới
+    const handleLicensePlateBottomChange = (e) => {
+        let val = e.target.value.toUpperCase().replace(/[\s-]/g, '');
+        if (val.length > 5) val = val.substring(0, 5);
+        setLicensePlateBottom(val);
+        setFormData(prev => ({ ...prev, licensePlate: `${licensePlateTop}-${val}` }));
+        if (errors.licensePlate) setErrors(prev => ({ ...prev, licensePlate: null }));
+    };
+
     const handleAutoFillUser = async () => {
         try {
             const response = await customerApi.getProfile();
@@ -225,7 +278,6 @@ export default function BookingPage() {
         }
     };
 
-    // HÀM PHA 1: Chỉ kiểm tra form và hiển thị Modal Xác nhận
     const handleRequestSubmit = (e) => {
         e.preventDefault();
 
@@ -239,14 +291,12 @@ export default function BookingPage() {
             return;
         }
 
-        // Nếu mọi thông tin đều chuẩn chỉ -> Bật Modal Hỏi Xác Nhận
         setShowConfirmModal(true);
     };
 
-    // HÀM PHA 2: Chạy khi người dùng bấm "Đồng ý" trên Modal Xác nhận
     const executeBooking = async () => {
-        setShowConfirmModal(false); // 1. Tắt modal xác nhận đi
-        setIsSubmitting(true);      // 2. Bật cờ loading báo đang gọi API
+        setShowConfirmModal(false);
+        setIsSubmitting(true);
 
         try {
             const payload = {
@@ -260,7 +310,6 @@ export default function BookingPage() {
 
             await appointmentApi.createBooking(payload);
 
-            // Gọi API Spring Boot thành công -> Bật Modal Success
             setBookingStatus({
                 isOpen: true,
                 type: 'success',
@@ -289,8 +338,9 @@ export default function BookingPage() {
             newErrors.phone = "Số điện thoại phải có ít nhất 10 chữ số (chỉ chứa số)";
         }
 
-        if (!formData.licensePlate.trim()) {
-            newErrors.licensePlate = "Biển số xe không được để trống";
+        // Cập nhật validate cho 2 ô biển số
+        if (!licensePlateTop.trim() || !licensePlateBottom.trim()) {
+            newErrors.licensePlate = "Vui lòng nhập đầy đủ 2 phần của biển số xe";
         }
 
         setErrors(newErrors);
@@ -306,7 +356,6 @@ export default function BookingPage() {
                 <img src="https://images.unsplash.com/photo-1625047509168-a7026f36de04?q=80&w=2070&auto=format&fit=crop" alt="Booking" className="w-full h-full object-cover opacity-40" />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
                 <div className="absolute bottom-0 left-0 w-full p-6 sm:p-10 max-w-7xl mx-auto">
-                    {/* <span className="px-3 py-1 bg-indigo-600/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-widest rounded-lg mb-3 inline-block shadow-sm">Bước 2 / 3</span> */}
                     <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight drop-shadow-md">Đặt lịch bảo dưỡng</h1>
                 </div>
             </div>
@@ -314,7 +363,6 @@ export default function BookingPage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-8 sm:mt-10">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
 
-                    {/* CỘT TRÁI: FORM NHẬP LIỆU */}
                     <div className="lg:col-span-5 flex flex-col gap-6">
 
                         {/* --- BOX CƠ SỞ --- */}
@@ -401,15 +449,30 @@ export default function BookingPage() {
                                 </button>
                             </div>
                             <div className="space-y-5">
+                                {/* Cập nhật Form nhập Biển Số Xe */}
                                 <div>
                                     <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2">
                                         Biển số xe <span className="text-red-500">*</span>
                                     </label>
-                                    <input
-                                        type="text" name="licensePlate" value={formData.licensePlate || ""}
-                                        onChange={handleInputChange} placeholder="VD: 29A-123.45"
-                                        className={`w-full bg-slate-50 border text-slate-900 font-bold text-sm rounded-xl px-4 py-3 uppercase focus:bg-white focus:outline-none focus:ring-2 transition-all ${errors.licensePlate ? 'border-red-400 focus:ring-red-400 bg-red-50/30' : 'border-slate-200 focus:ring-indigo-500'}`}
-                                    />
+                                    <div className="flex items-center gap-3">
+                                        <input
+                                            type="text"
+                                            value={licensePlateTop}
+                                            onChange={handleLicensePlateTopChange}
+                                            placeholder="VD: 29A1"
+                                            maxLength={4}
+                                            className={`w-1/2 bg-slate-50 border text-slate-900 font-bold text-center text-sm rounded-xl px-4 py-3 uppercase focus:bg-white focus:outline-none focus:ring-2 transition-all ${errors.licensePlate ? 'border-red-400 focus:ring-red-400 bg-red-50/30' : 'border-slate-200 focus:ring-indigo-500'}`}
+                                        />
+                                        <span className="font-black text-slate-400">-</span>
+                                        <input
+                                            type="text"
+                                            value={licensePlateBottom}
+                                            onChange={handleLicensePlateBottomChange}
+                                            placeholder="VD: 12345"
+                                            maxLength={5}
+                                            className={`w-1/2 bg-slate-50 border text-slate-900 font-bold text-center text-sm rounded-xl px-4 py-3 uppercase focus:bg-white focus:outline-none focus:ring-2 transition-all ${errors.licensePlate ? 'border-red-400 focus:ring-red-400 bg-red-50/30' : 'border-slate-200 focus:ring-indigo-500'}`}
+                                        />
+                                    </div>
                                     {errors.licensePlate && <p className="text-red-500 text-xs font-medium mt-1.5 flex items-center gap-1"><AlertCircle size={12} /> {errors.licensePlate}</p>}
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
@@ -426,7 +489,6 @@ export default function BookingPage() {
                         </div>
                     </div>
 
-                    {/* CỘT PHẢI: CHỌN GIỜ & SUBMIT */}
                     <div className="lg:col-span-7 flex flex-col gap-6 lg:sticky lg:top-6">
                         <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm">
                             <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-6">
@@ -450,7 +512,6 @@ export default function BookingPage() {
                                 </button>
                             </div>
 
-                            {/* --- LƯỚI CHỌN CA --- */}
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between mb-3">
                                     <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Các ca còn trống</h4>
@@ -479,22 +540,16 @@ export default function BookingPage() {
                                         {shifts.map((shift) => {
                                             const isFull = shift.currentBook >= shift.maxCapacity;
 
-                                            // --- LOGIC KIỂM TRA ĐÓNG CA (Sát 45 phút) ---
                                             let isClosedByTime = false;
-                                            // Nếu đang chọn "Hôm nay" (index 0)
                                             if (selectedDate === 0) {
                                                 const now = new Date();
-                                                const [endH, endM] = shift.endTime.split(':').map(Number);
-
-                                                // Tạo object ngày ứng với thời gian kết thúc ca
+                                                const [endH, endM] = shift.startTime.split(':').map(Number);
                                                 const shiftEndTimeObj = new Date();
                                                 shiftEndTimeObj.setHours(endH, endM, 0, 0);
+                                                console.log(shiftEndTimeObj)
+                                                // const cutoffTimeObj = new Date(shiftEndTimeObj.getTime() - 45 * 60000);
 
-                                                // Tính thời điểm chốt (Trừ đi 45 phút)
-                                                const cutoffTimeObj = new Date(shiftEndTimeObj.getTime() - 45 * 60000);
-
-                                                // Nếu giờ hiện tại đã vượt qua giờ chốt -> Khóa ca
-                                                if (now >= cutoffTimeObj) {
+                                                if (now >= shiftEndTimeObj) {
                                                     isClosedByTime = true;
                                                 }
                                             }
@@ -521,7 +576,6 @@ export default function BookingPage() {
                                                         <Clock size={14} /> {timeString}
                                                     </div>
 
-                                                    {/* Chữ hiển thị thay đổi tùy theo lý do khóa */}
                                                     <div className={`text-xs font-semibold ${isClosedByTime ? 'text-slate-500' : isFull ? 'text-red-500' : isSelected ? 'text-indigo-600' : 'text-emerald-600'}`}>
                                                         {isClosedByTime ? 'Đã đóng ca' : isFull ? 'Đã hết chỗ' : `Còn ${shift.maxCapacity - shift.currentBook} chỗ trống`}
                                                     </div>
@@ -533,7 +587,6 @@ export default function BookingPage() {
                             </div>
                         </div>
 
-                        {/* --- NÚT HOÀN TẤT --- */}
                         <div className="bg-slate-900 p-6 sm:p-8 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6 border border-slate-800">
                             <div className="text-left w-full sm:w-auto">
                                 <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Xác nhận lịch hẹn</p>
@@ -680,32 +733,28 @@ export default function BookingPage() {
                     </div>
                 </div>
             )}
+
             {/* --- MODAL THÔNG BÁO TRẠNG THÁI ĐẶT LỊCH --- */}
             {bookingStatus.isOpen && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
                     <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl z-10 p-6 sm:p-8 text-center animate-in zoom-in-95 duration-200">
 
-                        {/* Icon trạng thái */}
                         <div className={`mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-5 shadow-inner ${bookingStatus.type === 'success' ? 'bg-emerald-100 text-emerald-500' : 'bg-red-100 text-red-500'}`}>
                             {bookingStatus.type === 'success' ? <CheckCircle2 size={40} /> : <AlertCircle size={40} />}
                         </div>
 
-                        {/* Tiêu đề */}
                         <h3 className={`text-2xl font-black mb-3 tracking-tight ${bookingStatus.type === 'success' ? 'text-slate-900' : 'text-red-600'}`}>
                             {bookingStatus.type === 'success' ? 'Thành công!' : 'Đặt lịch thất bại'}
                         </h3>
 
-                        {/* Lời nhắn */}
                         <p className="text-slate-500 font-medium mb-8 leading-relaxed text-sm">
                             {bookingStatus.message}
                         </p>
 
-                        {/* Nút hành động */}
                         <button
                             onClick={() => {
                                 setBookingStatus({ ...bookingStatus, isOpen: false });
-                                // Nếu thành công thì chuyển trang, nếu lỗi thì chỉ đóng modal để sửa lại form
                                 if (bookingStatus.type === 'success') {
                                     navigate('/myAppointmentHistory');
                                 }
@@ -717,6 +766,7 @@ export default function BookingPage() {
                     </div>
                 </div>
             )}
+
             {/* Form xác nhận đặt */}
             {showConfirmModal && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
@@ -733,7 +783,6 @@ export default function BookingPage() {
                             </div>
                         </div>
 
-                        {/* Tóm tắt nhanh thông tin để khách kiểm tra */}
                         <div className="bg-slate-50 rounded-xl p-4 mb-8 space-y-3 border border-slate-100">
                             <div className="flex justify-between text-sm">
                                 <span className="text-slate-500 font-medium">Khách hàng:</span>
@@ -756,13 +805,13 @@ export default function BookingPage() {
 
                         <div className="flex gap-3">
                             <button
-                                onClick={() => setShowConfirmModal(false)} // Nút Hủy
+                                onClick={() => setShowConfirmModal(false)}
                                 className="flex-1 py-3.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
                             >
                                 Quay lại
                             </button>
                             <button
-                                onClick={executeBooking} // Nút Đồng ý -> Gọi hàm Pha 2
+                                onClick={executeBooking}
                                 className="flex-1 py-3.5 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all active:scale-95 flex justify-center items-center gap-2"
                             >
                                 Đồng ý đặt lịch
@@ -771,7 +820,6 @@ export default function BookingPage() {
                     </div>
                 </div>
             )}
-
         </div>
     );
 }

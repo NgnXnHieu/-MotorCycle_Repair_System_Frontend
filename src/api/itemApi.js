@@ -6,6 +6,7 @@ export const itemApi = {
         return axiosClient.get('/items', { params: params });
     },
 
+    //Lấy ra danh sách phụ tùng cho Customer khi chưa lọc theo Branch
     getFiltedItem: (filterForm) => {
         // Truyền page và size lên params (URL), các cái khác nằm trong data (Body)
         return axiosClient.post('/items/filtedItem', filterForm, {
@@ -14,6 +15,11 @@ export const itemApi = {
                 size: filterForm.size
             }
         });
+    },
+
+    //Lấy ra danh sách phụ tùng cho Customer lọc theo branch
+    getFiltedItem4Cus: (form) => {
+        return axiosClient.get(`/items/filtedItem4Cus`, { params: form })
     },
 
     getItemByID: (id) => {
@@ -97,4 +103,10 @@ export const itemApi = {
     getStockHistories: (form) => {
         return axiosClient.get(`/inventory_histories`, { params: form })
     },
+
+    //Lấy ra top 5 sản phẩm mới nhất
+    getTop5NewestItem: () => {
+        return axiosClient.get(`/items/top5NewestItem`)
+    },
+
 };

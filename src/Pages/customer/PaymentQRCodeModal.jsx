@@ -16,6 +16,7 @@ export default function PaymentQRCodeModal({
     const [isExpired, setIsExpired] = useState(false);
 
     useEffect(() => {
+        console.log("hehe:", paymentData)
         // Chỉ chạy khi Modal đang mở và có dữ liệu endTime
         if (!isOpen || !paymentData?.endTime) return;
 
@@ -55,13 +56,20 @@ export default function PaymentQRCodeModal({
 
     // THÊM MỚI: USE-EFFECT XỬ LÝ POLLING 3 GIÂY
     useEffect(() => {
-        // Nếu form không mở, hoặc đã hết hạn, hoặc không có orderId thì KHÔNG chạy polling
-        if (!isOpen || isExpired || !paymentData?.orderId) return;
+        // Nếu form không mở, hoặc đã hết hạn, hoặc không có customerPackageId thì KHÔNG chạy polling
+        if (!isOpen || isExpired || !paymentData?.customerPackageId) return;
 
         const checkPaymentStatus = async () => {
             try {
                 // Gọi API kiểm tra
-                const response = await paymentApi.checkStatus(paymentData.orderId);
+                let response
+                if (paymentData.customerPackageId !== undefined) {
+                    console.log("OK")
+                    response = await paymentApi.checkStatusForCustomerPackage(paymentData.customerPackageId);
+                    console.log(response)
+                } else {
+                    response = await paymentApi.checkStatus(paymentData.orderId);
+                }
                 const isPaid = response.data || response; // Tùy cấu trúc axios của bạn trả về
 
                 if (isPaid === true) {

@@ -222,12 +222,12 @@ export default function MyServicePackagesPage() {
                                         {/* Nút hành động */}
                                         <div className="mt-auto flex gap-3">
                                             {/* Nút Xem lịch sử - Luôn hiện */}
-                                            <button
+                                            {/* <button
                                                 onClick={() => console.log("Xem lịch sử gói", cp.id)}
                                                 className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl text-sm flex items-center justify-center gap-1.5 hover:bg-gray-200 transition-colors"
                                             >
                                                 <History size={16} /> Lịch sử
-                                            </button>
+                                            </button> */}
 
                                             {/* Nút Đặt lịch - Chỉ hiện khi còn Active và còn số lần */}
                                             {!isExpired && remaining > 0 && (
@@ -235,7 +235,7 @@ export default function MyServicePackagesPage() {
                                                     onClick={() => navigate('/booking')}
                                                     className="flex-[1.5] px-4 py-2.5 bg-blue-600 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1.5 hover:bg-blue-700 shadow-md shadow-blue-200 transition-colors"
                                                 >
-                                                    <CalendarDays size={16} /> Đặt lịch
+                                                    <CalendarDays size={16} /> Chi tiết
                                                 </button>
                                             )}
                                         </div>
