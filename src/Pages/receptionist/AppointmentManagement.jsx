@@ -172,7 +172,7 @@ const AppointmentManagement = () => {
                 } else {
                     res = await appointmentApi.getEmergencysForReps(filterForm);
                 }
-
+                console.log(res)
                 setAppointments(Array.isArray(res) ? res : (res?.data || []));
             } catch (error) {
                 console.error("Lỗi khi load danh sách ca sửa/cứu hộ:", error);
@@ -428,7 +428,6 @@ const AppointmentManagement = () => {
             </div>
 
             {/* TICKET LIST */}
-            {/* Tăng gap lên 6 để các ca sửa cách xa nhau rõ ràng hơn */}
             <div className="flex flex-col gap-6">
                 {loading ? (
                     <div className="text-center py-10 text-gray-600 font-bold">
@@ -445,20 +444,17 @@ const AppointmentManagement = () => {
                         return (
                             <div
                                 key={`appt-${appt?.id}-${index}`}
-                                // VIỀN ĐẬM, ĐỔ BÓNG RÕ, VIỀN TRÁI PHÂN BIỆT MÀU
                                 className={`bg-white border border-gray-300 shadow-md rounded-sm flex flex-col md:flex-row overflow-hidden border-l-8 ${isEmergency ? 'border-l-red-600' : 'border-l-[#5b9b8b]'}`}
                             >
                                 {/* CỘT TRÁI: THÔNG TIN KHÁCH HÀNG */}
                                 <div className={`p-5 md:w-[28%] border-r border-gray-300 flex flex-col justify-center ${isEmergency ? 'bg-red-50' : 'bg-gray-50'}`}>
 
-                                    {/* 1. Biển số xe: Đưa lên đầu, làm nổi bật với style giống biển số thật */}
                                     <div className="mb-3">
                                         <span className="bg-[#fbbf24] text-gray-900 font-bold text-xl px-4 py-1.5 rounded-sm border-1 border-gray-800 shadow-sm tracking-widest inline-block uppercase">
                                             {vehicle?.licensePlate || 'CHƯA CÓ BSX'}
                                         </span>
                                     </div>
 
-                                    {/* 2. Loại xe: Đưa xuống dưới, chữ nhỏ hơn một chút so với biển số */}
                                     <div className="font-bold text-base text-gray-700 flex items-center gap-2 uppercase mb-4">
                                         <FaMotorcycle className={isEmergency ? "text-red-600" : "text-[#5b9b8b]"} size={20} />
                                         {vehicle ? `${vehicle.brand} ${vehicle.model}` : 'Chưa có thông tin xe'}
@@ -479,7 +475,9 @@ const AppointmentManagement = () => {
                                 {/* CỘT PHẢI: THÔNG TIN XỬ LÝ */}
                                 <div className="p-5 md:w-[72%] flex flex-col justify-between bg-white">
                                     <div>
-                                        <div className="flex justify-between items-start mb-4 border-b border-gray-200 pb-3">
+                                        {/* HEADER CỘT PHẢI: ĐÃ CHỈNH SỬA Ở ĐÂY */}
+                                        <div className="flex justify-between items-start mb-4 border-b border-gray-200 pb-3 gap-4">
+                                            {/* Phần thông tin mã phiếu bên trái */}
                                             <div className="flex flex-wrap gap-3 items-center">
                                                 <span className={`font-black text-lg ${isEmergency ? 'text-red-700' : 'text-[#5b9b8b]'}`}>MÃ PHIẾU: #{appt?.id}</span>
 
@@ -492,6 +490,18 @@ const AppointmentManagement = () => {
                                                         {shiftInfo.name}
                                                     </span>
                                                 )}
+                                            </div>
+
+                                            {/* Phần Badge Trạng thái bên phải */}
+                                            <div className="shrink-0">
+                                                <span className={`px-4 py-2 rounded-sm font-black text-sm text-white shadow-md uppercase tracking-wider
+                                                    ${['BOOKED', 'REQUEST'].includes(status) ? 'bg-yellow-500 border border-yellow-600' :
+                                                        ['DIAGNOSING', 'ACCEPT'].includes(status) ? 'bg-orange-500 border border-orange-600' :
+                                                            status === 'WAITING' ? 'bg-purple-600 border border-purple-700' :
+                                                                status === 'FIXING' ? 'bg-blue-600 border border-blue-700' :
+                                                                    status === 'FINISHED' ? 'bg-green-600 border border-green-700' : 'bg-red-600 border border-red-700'}`}>
+                                                    {translateStatus(status, isEmergency)}
+                                                </span>
                                             </div>
                                         </div>
 
@@ -539,7 +549,7 @@ const AppointmentManagement = () => {
                                                         </div>
                                                     </div>
 
-                                                    {/* Dịch vụ (Đã gắn Button để mở Modal) */}
+                                                    {/* Dịch vụ */}
                                                     <div className="flex items-start gap-3 text-sm pl-1 pr-2">
                                                         <FaTools className="text-orange-600 text-base mt-0.5 shrink-0" />
                                                         <div className="w-full">
@@ -550,7 +560,7 @@ const AppointmentManagement = () => {
                                                                         <button
                                                                             key={idx}
                                                                             type="button"
-                                                                            onClick={() => handleServiceClick(svcDetail.id)} // GỌI HÀM MỞ MODAL VỚI svcDetail.id
+                                                                            onClick={() => handleServiceClick(svcDetail.id)}
                                                                             disabled={isServiceLoading}
                                                                             className="bg-white border-2 border-orange-300 text-orange-700 hover:bg-orange-50 hover:border-orange-500 text-xs px-3 py-1.5 rounded-sm font-bold shadow-sm transition-all flex items-center gap-1 active:scale-95 disabled:opacity-50"
                                                                             title="Nhấn để xem chi tiết"
@@ -574,7 +584,6 @@ const AppointmentManagement = () => {
                                                                 <span className="text-gray-900 font-bold">
                                                                     {repairOrder?.employeeDTO?.full_name || 'Chưa phân công'}
                                                                 </span>
-                                                                {/* Render SĐT nếu có */}
                                                                 {repairOrder?.employeeDTO?.phone && (
                                                                     <span className="text-gray-600 text-xs ml-2 pl-2 border-l border-gray-300">
                                                                         <FaPhone className="inline-block mr-1 text-gray-400 mb-0.5" size={10} />
@@ -618,7 +627,6 @@ const AppointmentManagement = () => {
                                                             </div>
                                                         </div>
 
-                                                        {/* HIỆN NÚT THANH TOÁN NẾU CÓ TIỀN VÀ CHƯA THANH TOÁN */}
                                                         {repairOrder?.payment_status !== 'PAYED' && repairOrder?.total_price > 0 && (
                                                             <button
                                                                 type="button"
@@ -635,16 +643,14 @@ const AppointmentManagement = () => {
                                         })()}
                                     </div>
 
-                                    {/* Footer card */}
+                                    {/* FOOTER CỘT PHẢI: ĐÃ CHỈNH SỬA Ở ĐÂY */}
                                     <div className="flex flex-wrap justify-between items-end pt-4 border-t border-gray-200 mt-5">
-                                        {/* Box hiển thị thời gian */}
                                         <div className="flex flex-col gap-2">
                                             <div className="text-sm text-gray-600 font-medium bg-gray-100 px-3 py-1.5 rounded-sm border border-gray-200 flex items-center gap-2">
                                                 <span className="font-bold text-gray-800">Tạo lúc:</span>
                                                 {appt?.created_at ? new Date(appt.created_at).toLocaleString('vi-VN') : 'N/A'}
                                             </div>
 
-                                            {/* Render status_time */}
                                             {appt?.status_time && (
                                                 <div className="text-sm text-blue-700 font-medium bg-blue-50 px-3 py-1.5 rounded-sm border border-blue-200 flex items-center gap-2">
                                                     <span className="font-bold text-blue-800">Cập nhật trạng thái lúc:</span>
@@ -653,18 +659,11 @@ const AppointmentManagement = () => {
                                             )}
                                         </div>
 
-                                        <div className="flex items-center gap-3 mt-4 sm:mt-0">
-                                            <span className={`px-4 py-2 rounded-sm font-black text-sm text-white shadow-md uppercase tracking-wider
-                                                ${['BOOKED', 'REQUEST'].includes(status) ? 'bg-yellow-500 border border-yellow-600' :
-                                                    ['DIAGNOSING', 'ACCEPT'].includes(status) ? 'bg-orange-500 border border-orange-600' :
-                                                        status === 'WAITING' ? 'bg-purple-600 border border-purple-700' :
-                                                            status === 'FIXING' ? 'bg-blue-600 border border-blue-700' :
-                                                                status === 'FINISHED' ? 'bg-green-600 border border-green-700' : 'bg-red-600 border border-red-700'}`}>
-                                                {translateStatus(status, isEmergency)}
-                                            </span>
+                                        <div className="flex items-center gap-3 mt-4 sm:mt-0 justify-end flex-grow">
+                                            {/* ĐÃ CHUYỂN BADGE TRẠNG THÁI KHỎI KHU VỰC NÀY */}
 
                                             {!isEmergency && status === 'BOOKED' && (
-                                                <button onClick={() => handleReceiveVehicle(appt.id)} className="curosr-pointer bg-white border-2 border-[#5b9b8b] text-[#5b9b8b] hover:bg-[#5b9b8b] hover:text-black hover:bg-green-500 px-5 py-2 rounded-sm font-bold transition-colors uppercase text-sm shadow-sm">
+                                                <button onClick={() => handleReceiveVehicle(appt.id)} className="cursor-pointer bg-white border-2 border-[#5b9b8b] text-[#5b9b8b] hover:bg-green-500 hover:text-white px-5 py-2 rounded-sm font-bold transition-colors uppercase text-sm shadow-sm">
                                                     ĐÃ NHẬN XE
                                                 </button>
                                             )}
@@ -707,12 +706,12 @@ const AppointmentManagement = () => {
                 )}
             </div>
 
-            {/* ===== MODAL HIỂN THỊ CHI TIẾT DỊCH VỤ (TÁI SỬ DỤNG) ===== */}
+            {/* ===== MODAL HIỂN THỊ CHI TIẾT DỊCH VỤ ===== */}
             <ServiceDetailModal
                 isOpen={isServiceModalOpen}
                 onClose={() => {
                     setIsServiceModalOpen(false);
-                    setTimeout(() => setSelectedServiceData(null), 200); // Clear data mượt mà
+                    setTimeout(() => setSelectedServiceData(null), 200);
                 }}
                 serviceData={selectedServiceData}
             />

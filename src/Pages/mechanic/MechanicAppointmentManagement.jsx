@@ -8,15 +8,20 @@ import {
 import Swal from 'sweetalert2';
 import { shiftInBranchApi } from '../../api/shiftInBranchApi';
 import { appointmentApi } from '../../api/appointmentApi';
-import { serviceApi } from '../../api/serviceApi'; // <-- Thêm import serviceApi
+import { serviceApi } from '../../api/serviceApi';
 import Pagination from '../../components/common/Pagination';
 import PaymentQRCodeModal from '../customer/PaymentQRCodeModal';
 import { paymentApi } from '../../api/paymentApi';
 
+// IMPORT ĐIỀU HƯỚNG
+import { useNavigate } from 'react-router-dom';
+
 // THÊM IMPORT MODAL CHI TIẾT DỊCH VỤ
-import ServiceDetailModal from '../customer/ServiceDetailModal'; // Hãy sửa đường dẫn cho đúng với dự án của bạn
+import ServiceDetailModal from '../customer/ServiceDetailModal';
 
 const MechanicAppointmentManagement = () => {
+    const navigate = useNavigate(); // <-- Khởi tạo hook điều hướng
+
     // ================= 1. STATES QUẢN LÝ TAB, FILTER & PAGINATION =================
     const [activeTab, setActiveTab] = useState('regular');
     const [selectedDate, setSelectedDate] = useState(() => {
@@ -138,7 +143,7 @@ const MechanicAppointmentManagement = () => {
 
                 const res = await appointmentApi.getAppointmentMechanic(filterForm);
                 const responseData = res?.data || res;
-                console.log(res)
+                console.log(responseData)
                 setAppointments(responseData?.content || []);
                 setTotalPages(responseData?.page?.totalPages || 0);
 
@@ -156,7 +161,6 @@ const MechanicAppointmentManagement = () => {
 
     // ================= 7. HÀM XỬ LÝ SỰ KIỆN =================
 
-    // HÀM CLICK MỞ MODAL CHI TIẾT DỊCH VỤ
     const handleServiceClick = async (serviceDetailId) => {
         setIsServiceLoading(true);
         try {
@@ -172,9 +176,17 @@ const MechanicAppointmentManagement = () => {
         }
     };
 
+    // SỬA TẠI ĐÂY: Xử lý logic điều hướng cho ca khẩn cấp
     const handleStartFixing = async (id, isEmergency) => {
+        if (isEmergency) {
+            // NẾU LÀ CỨU HỘ: Điều hướng sang trang chọn dịch vụ/phụ tùng
+            navigate(`/mechanic/diagnosisPage/${id}`);
+            return;
+        }
+
+        // NẾU LÀ CA SỬA THƯỜNG Ở CỬA HÀNG: Hiện xác nhận và nhận ca trực tiếp
         const result = await Swal.fire({
-            title: isEmergency ? 'Tiếp nhận cứu hộ?' : 'Nhận ca sửa chữa?',
+            title: 'Nhận ca sửa chữa?',
             text: "Xác nhận bắt đầu tiến hành công việc này?",
             icon: 'question',
             showCancelButton: true,
@@ -182,7 +194,7 @@ const MechanicAppointmentManagement = () => {
             cancelButtonColor: '#d33',
             confirmButtonText: 'Đồng ý, bắt đầu!',
             cancelButtonText: 'Hủy',
-            borderRadius: '0' // Xóa bo góc Swal cho đồng bộ UI
+            borderRadius: '0'
         });
 
         if (!result.isConfirmed) return;
@@ -224,7 +236,6 @@ const MechanicAppointmentManagement = () => {
         }
     };
 
-    // Xử lý khi nhấn nút THU TIỀN
     const handlePayment = async (repairOrderId) => {
         const result = await Swal.fire({
             title: 'Chọn hình thức thanh toán',
@@ -235,13 +246,12 @@ const MechanicAppointmentManagement = () => {
             confirmButtonText: '<i class="fas fa-qrcode"></i> Chuyển khoản QR',
             denyButtonText: '<i class="fas fa-money-bill-wave"></i> Tiền mặt',
             cancelButtonText: 'Đóng',
-            confirmButtonColor: '#4f46e5', // Xanh dương
-            denyButtonColor: '#16a34a',    // Xanh lá
+            confirmButtonColor: '#4f46e5',
+            denyButtonColor: '#16a34a',
             borderRadius: '0'
         });
 
         if (result.isConfirmed) {
-            // 1. NẾU CHỌN CHUYỂN KHOẢN QR
             try {
                 Swal.showLoading();
                 const response = await paymentApi.generateQR(repairOrderId);
@@ -256,14 +266,13 @@ const MechanicAppointmentManagement = () => {
                 });
 
                 Swal.close();
-                setIsPaymentModalOpen(true); // Bật form QR lên
+                setIsPaymentModalOpen(true);
             } catch (error) {
                 console.error("Lỗi khi tạo QR:", error?.response);
                 Swal.fire({ title: 'Lỗi', text: 'Không thể tạo mã QR lúc này. Vui lòng thử lại!', icon: 'error', borderRadius: '0' });
             }
 
         } else if (result.isDenied) {
-            // 2. NẾU CHỌN TIỀN MẶT
             const confirmCash = await Swal.fire({
                 title: 'Xác nhận thu tiền mặt',
                 text: 'Xác nhận bạn đã thu đủ tiền mặt từ khách hàng?',
@@ -278,9 +287,8 @@ const MechanicAppointmentManagement = () => {
             if (confirmCash.isConfirmed) {
                 try {
                     Swal.showLoading();
-                    // Gọi API thanh toán tiền mặt (Đảm bảo file paymentApi.js của bạn có hàm payByCash này nhé)
                     await paymentApi.payByCash(repairOrderId);
-                    handlePaymentSuccess(); // Báo thành công và tự động reload
+                    handlePaymentSuccess();
                 } catch (error) {
                     console.error("Lỗi thanh toán tiền mặt:", error);
                     Swal.fire({ title: 'Lỗi', text: 'Thanh toán thất bại, vui lòng thử lại!', icon: 'error', borderRadius: '0' });
@@ -289,9 +297,8 @@ const MechanicAppointmentManagement = () => {
         }
     };
 
-    // Hàm chung gọi khi thanh toán thành công (Tiền mặt hoặc QR Polling)
     const handlePaymentSuccess = () => {
-        setIsPaymentModalOpen(false); // Đóng Modal QR (nếu đang mở)
+        setIsPaymentModalOpen(false);
         Swal.fire({
             title: 'Thanh toán thành công!',
             text: 'Giao dịch đã được hệ thống ghi nhận.',
@@ -300,7 +307,7 @@ const MechanicAppointmentManagement = () => {
             showConfirmButton: false,
             borderRadius: '0'
         });
-        setRefreshKey(prev => prev + 1); // F5 lại dữ liệu ngầm để ẩn nút Thu tiền
+        setRefreshKey(prev => prev + 1);
     };
 
     // ================= 8. RENDER =================
@@ -308,7 +315,6 @@ const MechanicAppointmentManagement = () => {
         <div className="p-6 bg-gray-100 min-h-screen relative font-sans">
             <h1 className="text-2xl font-bold text-gray-900 mb-6 uppercase tracking-wide border-l-4 border-gray-800 pl-3">Không gian làm việc - Kỹ thuật viên</h1>
 
-            {/* TABS SWITCHER (Vuông vức, tương phản cao) */}
             <div className="flex gap-1 mb-6 border-b-2 border-gray-300 pb-0">
                 <button
                     onClick={() => { setActiveTab('regular'); setActiveStatus(''); }}
@@ -326,7 +332,6 @@ const MechanicAppointmentManagement = () => {
                 </button>
             </div>
 
-            {/* FILTERS AREA */}
             <div className="bg-white p-5 rounded-sm shadow-md border border-gray-300 mb-6 flex flex-wrap gap-5 items-end">
                 <div className="flex flex-col">
                     <label className="text-sm font-bold text-gray-800 mb-1">Chọn ngày</label>
@@ -357,7 +362,6 @@ const MechanicAppointmentManagement = () => {
                 )}
             </div>
 
-            {/* STATUS TABS */}
             <div className="flex flex-wrap gap-2 mb-8">
                 <button
                     onClick={() => setActiveStatus('')}
@@ -378,7 +382,6 @@ const MechanicAppointmentManagement = () => {
                 ))}
             </div>
 
-            {/* TICKET LIST - Tăng gap lên 6 để phân chia rõ ràng */}
             <div className="flex flex-col gap-6">
                 {loading ? (
                     <div className="text-center py-10 text-gray-600 font-bold">
@@ -399,23 +402,19 @@ const MechanicAppointmentManagement = () => {
                             <div key={`appt-${appt?.id}-${index}`}
                                 className={`bg-white border border-gray-300 shadow-md rounded-sm flex flex-col md:flex-row overflow-hidden relative border-l-8 ${isEmergency ? 'border-l-red-600' : 'border-l-[#5b9b8b]'}`}
                             >
-                                {/* ================== CỘT TRÁI: THÔNG TIN KHÁCH HÀNG ================== */}
                                 <div className={`p-5 md:w-[28%] border-r border-gray-300 flex flex-col justify-center ${isEmergency ? 'bg-red-50' : 'bg-gray-50'}`}>
 
-                                    {/* 1. Biển số xe nổi bật */}
                                     <div className="mb-3">
                                         <span className="bg-green-300 text-gray-900 font-bold text-xl px-4 py-1.5 rounded-sm border-2 border-gray-600 shadow-sm tracking-widest inline-block uppercase">
                                             {vehicle?.licensePlate || 'CHƯA CÓ BSX'}
                                         </span>
                                     </div>
 
-                                    {/* 2. Loại xe */}
                                     <div className="font-bold text-base text-gray-700 flex items-center gap-2 uppercase mb-4">
                                         <FaMotorcycle className={isEmergency ? "text-red-600" : "text-[#5b9b8b]"} size={20} />
                                         {vehicle ? `${vehicle.brand} ${vehicle.model}` : 'Chưa có thông tin xe'}
                                     </div>
 
-                                    {/* 3. Tên và SĐT thiết kế vuông vức, sạch sẽ */}
                                     <div className="flex items-center gap-3 text-sm text-gray-800 mt-2 font-medium">
                                         <div className="w-6 h-6 rounded-sm flex items-center justify-center bg-gray-200 border border-gray-300"><FaUser className="text-gray-600" size={12} /></div>
                                         {appt?.bringer_name || 'Không rõ tên'}
@@ -428,10 +427,8 @@ const MechanicAppointmentManagement = () => {
                                     </div>
                                 </div>
 
-                                {/* ================== CỘT PHẢI: CHI TIẾT & HÀNH ĐỘNG ================== */}
                                 <div className="p-5 md:w-[72%] flex flex-col justify-between relative bg-white">
 
-                                    {/* STATUS BADGE GÓC TRÊN BÊN PHẢI */}
                                     <div className="absolute top-4 right-5">
                                         <span className={`px-4 py-1.5 rounded-sm font-black text-xs text-white shadow-sm uppercase tracking-wider
                                             ${status === 'WAITING' ? 'bg-purple-600' :
@@ -442,7 +439,7 @@ const MechanicAppointmentManagement = () => {
                                     </div>
 
                                     <div>
-                                        <div className="flex justify-between items-start mb-4 border-b border-gray-200 pb-3 pr-32"> {/* Thêm pr-32 để không đè lên status */}
+                                        <div className="flex justify-between items-start mb-4 border-b border-gray-200 pb-3 pr-32">
                                             <div className="flex flex-wrap gap-3 items-center">
                                                 <span className={`font-black text-lg ${isEmergency ? 'text-red-700' : 'text-[#5b9b8b]'}`}>MÃ PHIẾU: #{appt?.id}</span>
                                                 <span className={`text-xs px-3 py-1.5 rounded-sm border font-bold uppercase tracking-wide ${isEmergency ? 'bg-red-100 text-red-800 border-red-300' : (appt?.appointmentType === "ONLINE" ? 'bg-purple-100 text-purple-800 border-purple-300' : 'bg-gray-200 text-gray-800 border-gray-400')}`}>
@@ -456,7 +453,6 @@ const MechanicAppointmentManagement = () => {
                                             </div>
                                         </div>
 
-                                        {/* Tình trạng khách báo */}
                                         <div className="mb-4">
                                             <p className="text-sm text-gray-800 mb-2 leading-relaxed bg-yellow-50 border border-yellow-200 p-3 rounded-sm">
                                                 <strong className="text-gray-900 uppercase">Tình trạng khách báo:</strong>{' '}
@@ -465,14 +461,28 @@ const MechanicAppointmentManagement = () => {
                                                     : (appt?.description || 'Chưa có mô tả lỗi')}
                                             </p>
 
-                                            {isEmergency && locationInfo?.mapUrl && (
-                                                <a href={locationInfo.mapUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 px-4 py-2 rounded-sm text-sm font-bold transition-colors shadow-sm mt-1">
-                                                    <FaMapMarkerAlt /> XEM VỊ TRÍ KHÁCH HÀNG (BẢN ĐỒ)
-                                                </a>
+                                            {isEmergency && locationInfo && (
+                                                <div className="mt-3 bg-red-50 border border-red-200 p-3 rounded-sm flex flex-col items-start">
+                                                    <p className="text-sm text-gray-800 mb-2">
+                                                        <strong className="text-red-800 uppercase flex items-center gap-1 mb-1">
+                                                            <FaMapMarkerAlt /> Địa chỉ khách báo:
+                                                        </strong>
+                                                        <span className="font-medium text-base">
+                                                            {locationInfo.address || 'Chưa có thông tin địa chỉ cụ thể'}
+                                                        </span>
+                                                    </p>
+                                                    {locationInfo.mapUrl && (
+                                                        <a
+                                                            href={locationInfo.mapUrl} target="_blank" rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white border border-red-700 px-5 py-2.5 rounded-sm text-sm font-bold transition-colors shadow-md mt-1"
+                                                        >
+                                                            <FaMapMarkerAlt size={16} /> MỞ BẢN ĐỒ TÌM ĐƯỜNG ĐI
+                                                        </a>
+                                                    )}
+                                                </div>
                                             )}
                                         </div>
 
-                                        {/* Khung nhiệm vụ của thợ & Chi phí (Viền vuông, rõ ràng) */}
                                         {repairOrder && (
                                             <div className="mt-5 bg-blue-50 border border-blue-200 rounded-sm p-4 grid grid-cols-1 md:grid-cols-2 gap-y-5 gap-x-6">
 
@@ -488,7 +498,6 @@ const MechanicAppointmentManagement = () => {
                                                     </div>
                                                 </div>
 
-                                                {/* Danh sách dịch vụ - Hiển thị thành các nút bấm giống quản lý */}
                                                 <div className="flex items-start gap-3 text-sm pl-1 pr-2">
                                                     <FaTools className="text-orange-600 text-base mt-0.5 shrink-0" />
                                                     <div className="w-full">
@@ -526,7 +535,6 @@ const MechanicAppointmentManagement = () => {
                                                     </div>
                                                 </div>
 
-                                                {/* Bổ sung: Chi phí & Thanh toán (Thêm border trên chia khối) */}
                                                 <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 pt-4 border-t border-blue-200">
                                                     <div className="flex items-start gap-3 text-sm pl-1">
                                                         <FaMoneyBillWave className="text-green-700 text-base mt-0.5 shrink-0" />
@@ -547,11 +555,18 @@ const MechanicAppointmentManagement = () => {
                                                         <div>
                                                             <span className="font-black text-gray-900 uppercase block mb-1">Thanh toán:</span>
                                                             {repairOrder?.payment_status === 'PAYED' ? (
-                                                                <span className="bg-green-100 text-green-800 border-2 border-green-300 text-xs px-2 py-1 rounded-sm font-bold shadow-sm uppercase tracking-wide inline-block">
-                                                                    ĐÃ THANH TOÁN
-                                                                </span>
+                                                                <div className="flex flex-wrap gap-2 mt-1">
+                                                                    <span className="bg-green-100 text-green-800 border-2 border-green-300 text-xs px-2 py-1 rounded-sm font-bold shadow-sm uppercase tracking-wide inline-flex items-center">
+                                                                        ĐÃ THANH TOÁN
+                                                                    </span>
+                                                                    {repairOrder?.paymentType && (
+                                                                        <span className="bg-blue-100 text-blue-800 border-2 border-blue-300 text-xs px-2 py-1 rounded-sm font-bold shadow-sm uppercase tracking-wide inline-flex items-center">
+                                                                            {repairOrder.paymentType === 'BANK' ? '💳 CHUYỂN KHOẢN' : '💵 TIỀN MẶT'}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
                                                             ) : (
-                                                                <span className="bg-yellow-100 text-yellow-800 border-2 border-yellow-300 text-xs px-2 py-1 rounded-sm font-bold shadow-sm uppercase tracking-wide inline-block">
+                                                                <span className="bg-yellow-100 text-yellow-800 border-2 border-yellow-300 text-xs px-2 py-1 rounded-sm font-bold shadow-sm uppercase tracking-wide inline-block mt-1">
                                                                     CHƯA THANH TOÁN
                                                                 </span>
                                                             )}
@@ -562,7 +577,6 @@ const MechanicAppointmentManagement = () => {
                                         )}
                                     </div>
 
-                                    {/* Footer card: Thời gian & Nút chức năng */}
                                     <div className="flex flex-wrap justify-between items-end pt-4 border-t border-gray-200 mt-5">
 
                                         <div className="flex flex-col gap-2">
@@ -580,7 +594,7 @@ const MechanicAppointmentManagement = () => {
 
                                         <div className="flex items-center gap-3 mt-4 sm:mt-0">
                                             {/* NÚT THU TIỀN */}
-                                            {repairOrder && repairOrder?.payment_status !== 'PAID' && (
+                                            {repairOrder && repairOrder?.payment_status !== 'PAYED' && (!isEmergency || status !== 'WAITING') && (
                                                 <button
                                                     onClick={() => handlePayment(repairOrder.id)}
                                                     className="bg-orange-500 border-2 border-orange-600 hover:bg-orange-600 text-white px-5 py-2 rounded-sm text-sm font-bold transition-colors shadow-md flex items-center gap-2 uppercase tracking-wide"
@@ -624,7 +638,6 @@ const MechanicAppointmentManagement = () => {
                 )}
             </div>
 
-            {/* COMPONENT PHÂN TRANG */}
             {!loading && totalPages > 1 && (
                 <Pagination
                     currentPage={currentPage}
@@ -633,7 +646,6 @@ const MechanicAppointmentManagement = () => {
                 />
             )}
 
-            {/* MODAL HIỂN THỊ CHI TIẾT DỊCH VỤ */}
             <ServiceDetailModal
                 isOpen={isServiceModalOpen}
                 onClose={() => {
@@ -643,14 +655,12 @@ const MechanicAppointmentManagement = () => {
                 serviceData={selectedServiceData}
             />
 
-            {/* ===== MODAL THANH TOÁN QR CODE ===== */}
             <PaymentQRCodeModal
                 isOpen={isPaymentModalOpen}
                 onClose={() => setIsPaymentModalOpen(false)}
                 paymentData={paymentData}
                 onSuccess={handlePaymentSuccess}
             />
-
 
         </div>
     );

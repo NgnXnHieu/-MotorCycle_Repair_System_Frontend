@@ -73,5 +73,10 @@ export const appointmentApi = {
     //Cập nhật trạng thái cho Mechanic fixing -> finished
     updateMechanicToFinished: (id) => {
         return axiosClient.post(`/appointments/mechanics/appointments/${id}/fixingStatus`)
-    }
+    },
+
+    //Cập nhật trạng thái cho Mechanic waiting -> fixing
+    updateMechanicToFixingV2: (form) => {
+        return axiosClient.post(`/appointments/mechanic-fixing`, form)
+    },
 }

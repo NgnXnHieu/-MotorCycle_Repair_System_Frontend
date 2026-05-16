@@ -56,6 +56,7 @@ import EditVehiclePage from '../Pages/customer/EditVehiclePage'
 import CustomerProfile from '../Pages/customer/CustomerProfile';
 import DiagnosisPage from '../Pages/receptionist/DiagnosisPage';
 import ServiceDetailModal from '../Pages/customer/ServiceDetailModal';
+import MechanicDiagnosisPage from '../Pages/mechanic/MechanicDiagnosisPage';
 
 // Tạo một Root Component để cấu hình các tính năng Global cho Router
 const RootWrapper = () => {
@@ -94,6 +95,7 @@ const router = createBrowserRouter(
                 <Route path="vehicleManagement/addVehiclePage" element={<AddVehiclePage />} />
                 <Route path="vehicleManagement/edit/:id" element={<EditVehiclePage />} />
                 <Route path="/profile" element={<CustomerProfile />} />
+
             </Route>
 
             {/* Nhóm 2: Các trang dùng Staff Layout (Có Sidebar bên trái) */}
@@ -139,6 +141,8 @@ const router = createBrowserRouter(
                 <Route path='mechanic/myShift' element={<MechanicAppointmentManagement />} />
                 <Route path='mechanic/myProfile' element={<EmployeeProfile />} />
                 <Route path="mechanic/items" element={<StaffItemManagement />} />
+                <Route path="/mechanic/diagnosisPage/:appointmentId" element={<MechanicDiagnosisPage />} />
+
             </Route>
         </Route>
     )

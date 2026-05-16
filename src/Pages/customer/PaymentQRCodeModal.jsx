@@ -57,10 +57,11 @@ export default function PaymentQRCodeModal({
     // THÊM MỚI: USE-EFFECT XỬ LÝ POLLING 3 GIÂY
     useEffect(() => {
         // Nếu form không mở, hoặc đã hết hạn, hoặc không có customerPackageId thì KHÔNG chạy polling
-        if (!isOpen || isExpired || !paymentData?.customerPackageId) return;
+        if (!isOpen || isExpired) return;
 
         const checkPaymentStatus = async () => {
             try {
+                console.log(paymentData)
                 // Gọi API kiểm tra
                 let response
                 if (paymentData.customerPackageId !== undefined) {
