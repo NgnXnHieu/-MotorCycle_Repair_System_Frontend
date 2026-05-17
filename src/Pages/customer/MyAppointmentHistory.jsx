@@ -13,6 +13,7 @@ import ServiceDetailModal from './ServiceDetailModal';
 import PaymentQRCodeModal from './PaymentQRCodeModal';
 import { paymentApi } from '../../api/paymentApi';
 import Swal from 'sweetalert2';
+import { ToastContainer } from 'react-toastify';
 
 export default function MyAppointmentHistory() {
     const navigate = useNavigate();
@@ -184,6 +185,50 @@ export default function MyAppointmentHistory() {
             toast.error("Không thể tải thông tin dịch vụ.");
         } finally {
             setIsServiceLoading(false);
+        }
+    };
+
+    //Hủy lịch hẹn
+    const handleCancelAppointment = async (apptId) => {
+        // 1. Hiển thị cảnh báo xác nhận bằng SweetAlert2
+        const result = await Swal.fire({
+            title: 'Xác nhận hủy lịch hẹn?',
+            text: 'Bạn có chắc chắn muốn hủy lịch hẹn này không? Hành động này không thể hoàn tác.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444', // Màu đỏ (red-500)
+            cancelButtonColor: '#64748b',  // Màu xám (slate-500)
+            confirmButtonText: 'Đồng ý hủy',
+            cancelButtonText: 'Đóng'
+        });
+
+        if (result.isConfirmed) {
+            const toastId = toast.loading("Đang xử lý hủy lịch hẹn...");
+            try {
+                // TODO: Gọi API hủy lịch hẹn. Đảm bảo bạn đã khai báo hàm này trong appointmentApi.js
+                await appointmentApi.cancelAppointment(apptId);
+
+                // Demo gọi API (Bạn cần uncomment dòng trên và xóa dòng setTimeout demo này đi)
+                // await new Promise(resolve => setTimeout(resolve, 1000)); 
+
+                toast.update(toastId, {
+                    render: "Đã hủy lịch hẹn thành công!",
+                    type: "success",
+                    isLoading: false,
+                    autoClose: 3000
+                });
+
+                // Gọi lại API fetchHistory để cập nhật danh sách
+                fetchHistory();
+            } catch (error) {
+                console.error("Lỗi khi hủy lịch: ", error);
+                toast.update(toastId, {
+                    render: "Không thể hủy lịch hẹn. Vui lòng thử lại sau!",
+                    type: "error",
+                    isLoading: false,
+                    autoClose: 3000
+                });
+            }
         }
     };
 
@@ -483,6 +528,19 @@ export default function MyAppointmentHistory() {
                                                 </div>
                                             </div>
                                         )}
+
+                                        {/* KHU VỰC NÚT HỦY ĐẶT Ở GÓC DƯỚI CÙNG BÊN PHẢI */}
+                                        {['BOOKED', 'REQUEST'].includes(appt.appointment_status) && (
+                                            <div className="mt-6 pt-6 border-t-2 border-slate-100 flex justify-end w-full">
+                                                <button
+                                                    onClick={() => handleCancelAppointment(appt.id)}
+                                                    className="flex items-center gap-2 px-6 py-2.5 bg-white text-red-500 hover:bg-red-500 hover:text-white border-2 border-red-200 hover:border-red-500 rounded-md text-sm font-bold transition-all duration-300 ease-in-out active:scale-95 shadow-sm group"
+                                                >
+                                                    <X size={18} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform duration-300" />
+                                                    HỦY LỊCH HẸN
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))
@@ -511,6 +569,8 @@ export default function MyAppointmentHistory() {
                 paymentData={paymentData}
                 onSuccess={handlePaymentSuccess}
             />
+
+            <ToastContainer position="top-right" autoClose={3000} />
         </div>
     );
 }

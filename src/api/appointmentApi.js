@@ -79,4 +79,9 @@ export const appointmentApi = {
     updateMechanicToFixingV2: (form) => {
         return axiosClient.post(`/appointments/mechanic-fixing`, form)
     },
+
+    //Hủy appointment cho phía khách hàng
+    cancelAppointment: (id) => {
+        return axiosClient.get(`/appointments/customer-cancel/${id}`)
+    }
 }

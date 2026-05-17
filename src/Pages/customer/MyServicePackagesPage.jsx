@@ -150,7 +150,7 @@ export default function MyServicePackagesPage() {
                         <h3 className="text-xl font-bold text-gray-800 mb-2">Chưa có gói dịch vụ nào</h3>
                         <p className="text-gray-500 mb-6">Bạn chưa đăng ký hoặc không có gói dịch vụ nào trong mục này.</p>
                         <button
-                            onClick={() => navigate('/servicePackages')}
+                            onClick={() => navigate('/servicePackagePage')}
                             className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-md shadow-blue-200"
                         >
                             Khám phá gói dịch vụ
