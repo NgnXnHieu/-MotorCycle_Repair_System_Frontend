@@ -184,20 +184,24 @@ export default function ItemDetailPage() {
                         <h2 className="text-2xl font-black text-slate-900 tracking-tight">Thông số kỹ thuật</h2>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                        <div className="md:col-span-1 space-y-4">
+                    {/* Container chứa 2 phần: Khối thông số (trên) và Khối mô tả (dưới) */}
+                    <div className="flex flex-col gap-8">
+
+                        {/* HÀNG TRÊN: Kích thước và Bảo hành nằm ngang (chia 2 cột trên màn hình lớn) */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {item.dimension && (
                                 <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 flex items-start gap-4">
-                                    <Ruler size={22} className="text-indigo-500 mt-0.5" />
+                                    <Ruler size={22} className="text-indigo-500 mt-0.5 flex-shrink-0" />
                                     <div>
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kích cỡ tiêu chuẩn</p>
                                         <p className="text-base font-black text-slate-800 mt-1">{item.dimension}</p>
                                     </div>
                                 </div>
                             )}
+
                             {item.warranty_year > 0 && (
                                 <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 flex items-start gap-4">
-                                    <ShieldCheck size={22} className="text-indigo-500 mt-0.5" />
+                                    <ShieldCheck size={22} className="text-indigo-500 mt-0.5 flex-shrink-0" />
                                     <div>
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Chế độ Bảo hành</p>
                                         <p className="text-base font-black text-slate-800 mt-1">{item.warranty_year} Năm chính hãng</p>
@@ -206,9 +210,14 @@ export default function ItemDetailPage() {
                             )}
                         </div>
 
-                        <div className="md:col-span-2 text-slate-600 leading-relaxed text-justify text-lg bg-slate-50/50 p-8 rounded-3xl border border-slate-50 italic">
+                        {/* HÀNG DƯỚI: Mô tả sản phẩm trải dài toàn bộ chiều rộng */}
+                        <div className="text-slate-600 leading-relaxed text-justify text-lg bg-slate-50/50 p-8 rounded-3xl border border-slate-50 italic">
+                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-4">
+                                Mô tả chi tiết sản phẩm
+                            </span>
                             <p className="whitespace-pre-line">{item.decription || "Chưa có mô tả kỹ thuật cho linh kiện này."}</p>
                         </div>
+
                     </div>
                 </div>
 

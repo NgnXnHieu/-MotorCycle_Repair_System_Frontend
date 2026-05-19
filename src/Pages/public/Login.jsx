@@ -44,6 +44,8 @@ export default function Login() {
                     navigate('/generalManager/employeeProfile');
                 } else if (role === "ROLE_MECHANIC") {
                     navigate(`/mechanic/myShift`)
+                } else if (role == "ROLE_BRANCH_MANAGER") {
+                    navigate(`/branchManager/dashboard`)
                 }
             }, 1000);
 

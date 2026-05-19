@@ -140,6 +140,7 @@ const MechanicAppointmentManagement = () => {
                     page: currentPage,
                     size: 10
                 };
+                console.log(filterForm)
 
                 const res = await appointmentApi.getAppointmentMechanic(filterForm);
                 const responseData = res?.data || res;

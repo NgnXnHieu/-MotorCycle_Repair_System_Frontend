@@ -95,7 +95,7 @@ export default function SparePartsPage() {
             const response = await itemApi.getFiltedItem(filterForm);
             const data = response.content || response;
             const pageInfo = response.page;
-
+            console.log(response)
             setProducts(data || []);
             setTotalPages(pageInfo?.totalPages || 0);
             setCurrentPage(pageInfo?.number || 0);
@@ -106,8 +106,19 @@ export default function SparePartsPage() {
         }
     };
 
+    // --- CODE MỚI ĐÃ SỬA ---
     const handleResetSearch = () => {
-        setSearchParams({ page: 0 });
+        const currentPageInUrl = parseInt(searchParams.get('page')) || 0;
+
+        if (currentPageInUrl === 0) {
+            // Nếu ĐÃ Ở SẴN trang 0, việc set lại URL sẽ không kích hoạt useEffect.
+            // Do đó, ta PHẢI GỌI TRỰC TIẾP API luôn.
+            handleSearch(0);
+        } else {
+            // Nếu đang ở trang khác, set về trang 0. 
+            // URL thay đổi sẽ tự động kích hoạt useEffect gọi API.
+            setSearchParams({ page: 0 });
+        }
     };
 
     const handlePageChange = (pageNumber) => {
@@ -148,20 +159,37 @@ export default function SparePartsPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-12 font-sans">
-            {/* HEADER PAGE ĐÃ ĐƯỢC CHUYỂN THÀNH CMS ĐỘNG */}
-            <div className="bg-white border-b border-gray-200 py-6 mb-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h1
-                        className="text-3xl font-black"
-                        style={{ color: pageContents.header_title?.color || '#111827' }}
-                        dangerouslySetInnerHTML={{ __html: pageContents.header_title?.value || 'Danh mục Phụ tùng & Linh kiện' }}
-                    />
-                    <p
-                        className="mt-2 font-medium"
-                        style={{ color: pageContents.header_subtitle?.color || '#6b7280' }}
+            {/* HERO SECTION ĐỘNG TỪ BẢNG CONTENTS (MENU_ID: 3) */}
+            <div className="relative w-full h-[200px] md:h-[260px] mb-8 overflow-hidden bg-slate-900">
+                {/* ẢNH NỀN */}
+                <img
+                    src={pageContents['hero_bg_image']?.value || "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?q=80&w=1920&auto=format&fit=crop"}
+                    alt="Phụ tùng linh kiện"
+                    className="absolute inset-0 w-full h-full object-cover opacity-60"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-slate-900/70 to-transparent"></div>
+
+                <div className="absolute inset-0 flex flex-col items-start justify-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10">
+
+                    {/* TIÊU ĐỀ PHỤ (SUBTITLE) */}
+                    <span
+                        className="font-bold tracking-[0.2em] uppercase text-[10px] md:text-xs mb-3 drop-shadow-sm border-l-2 pl-3"
+                        style={{
+                            color: pageContents['header_subtitle']?.color || '#60a5fa',
+                            borderColor: pageContents['header_subtitle']?.color || '#60a5fa'
+                        }}
                     >
-                        {pageContents.header_subtitle?.value || 'Cung cấp linh kiện chính hãng, bảo hành uy tín'}
-                    </p>
+                        {pageContents['header_subtitle']?.value || 'Cung cấp linh kiện chính hãng'}
+                    </span>
+
+                    {/* TIÊU ĐỀ CHÍNH (TITLE) */}
+                    {/* Dùng dangerouslySetInnerHTML vì trong DB bạn có lưu thẻ <br /> để ngắt dòng */}
+                    <h1
+                        className="text-3xl md:text-4xl lg:text-5xl font-black drop-shadow-md tracking-tight max-w-2xl leading-tight"
+                        style={{ color: pageContents['header_title']?.color || '#ffffff' }}
+                        dangerouslySetInnerHTML={{ __html: pageContents['header_title']?.value || 'Danh mục Phụ tùng' }}
+                    />
+
                 </div>
             </div>
 

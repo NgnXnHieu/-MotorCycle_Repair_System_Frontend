@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Edit, Type, Link as LinkIcon, Palette, Layers, Image as ImageIcon, Settings } from 'lucide-react';
+import { Edit, Type, Link as LinkIcon, Palette, Layers, Image as ImageIcon, Settings, Loader2 } from 'lucide-react';
 import { menuApi } from '../../api/menuApi';
 import { contentApi } from '../../api/contentApi';
 import { LayoutList } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 export default function ContentManager() {
     const [menus, setMenus] = useState([]);
@@ -20,6 +21,8 @@ export default function ContentManager() {
 
     // State để lưu đường dẫn xem trước ảnh
     const [previewUrl, setPreviewUrl] = useState(null);
+
+    const [isSaving, setIsSaving] = useState(false);
 
     // LOGIC TẠO PREVIEW URL
     useEffect(() => {
@@ -75,15 +78,42 @@ export default function ContentManager() {
     const handleSave = async (e) => {
         e.preventDefault();
 
-        const isConfirm = window.confirm("Bạn có chắc chắn muốn lưu các thay đổi này không?");
-        if (!isConfirm) return;
+        // 1. Dùng SweetAlert2 để hỏi xác nhận (Bất đồng bộ)
+        const result = await Swal.fire({
+            title: 'Bạn có chắc chắn?',
+            text: "Các thay đổi này sẽ được cập nhật lên hệ thống!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#2563eb', // Màu xanh blue-600 đồng bộ với UI của bạn
+            cancelButtonColor: '#ef4444', // Màu đỏ cho nút Hủy
+            confirmButtonText: 'Có, lưu lại!',
+            cancelButtonText: 'Hủy bỏ',
+            customClass: {
+                confirmButton: 'rounded-xl px-5 py-2.5 font-semibold',
+                cancelButton: 'rounded-xl px-5 py-2.5 font-semibold'
+            }
+        });
+
+        // Nếu người dùng chọn "Hủy bỏ" hoặc click ra ngoài, dừng hàm lại
+        if (!result.isConfirmed) return;
+
+        // 2. Bắt đầu hiển thị trạng thái quay vòng tròn
+        setIsSaving(true);
 
         try {
             if (editType === 'MENU') {
                 await menuApi.update(formData.id, formData);
                 setMenus(menus.map(m => m.id === formData.id ? formData : m));
                 setSelectedMenu(formData);
-                alert("✅ Cập nhật thông tin Trang (Menu) thành công!");
+
+                // 3. Thông báo thành công cho MENU (Tự động tắt sau 2 giây)
+                Swal.fire({
+                    title: 'Thành công!',
+                    text: 'Cập nhật thông tin Trang (Menu) thành công.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
 
             } else if (editType === 'CONTENT') {
                 const submitData = new FormData();
@@ -101,15 +131,36 @@ export default function ContentManager() {
                 const updatedContent = response.data || response;
 
                 setContents(contents.map(c => c.id === updatedContent.id ? updatedContent : c));
-                alert("✅ Cập nhật Nội dung thành công!");
+
+                // 3. Thông báo thành công cho CONTENT (Tự động tắt sau 2 giây)
+                Swal.fire({
+                    title: 'Thành công!',
+                    text: 'Cập nhật Nội dung thành công.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             }
 
+            // Đóng modal sau khi lưu thành công
             setIsModalOpen(false);
             setSelectedFile(null);
+
         } catch (error) {
             console.error("Lỗi cập nhật:", error);
             const errorMsg = error.response?.data?.message || "Đã xảy ra lỗi không xác định từ máy chủ!";
-            alert(`❌ Cập nhật thất bại:\n${errorMsg}`);
+
+            // 4. Thông báo lỗi bằng SweetAlert2
+            Swal.fire({
+                title: 'Cập nhật thất bại!',
+                text: errorMsg,
+                icon: 'error',
+                confirmButtonColor: '#2563eb',
+                confirmButtonText: 'Đóng'
+            });
+        } finally {
+            // 5. Tắt trạng thái quay vòng tròn
+            setIsSaving(false);
         }
     };
 
@@ -416,8 +467,29 @@ export default function ContentManager() {
 
                             {/* PHẦN FOOTER (NÚT LƯU) */}
                             <div className="px-6 py-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-200 shrink-0">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="cursor-pointer px-5 py-2.5 text-gray-700 bg-white border border-gray-300 hover:bg-gray-100 rounded-xl font-semibold transition-colors">Hủy bỏ</button>
-                                <button type="submit" className="cursor-pointer px-5 py-2.5 text-white bg-blue-600 hover:bg-blue-700 rounded-xl font-semibold transition-colors shadow-lg shadow-blue-500/30">Lưu thay đổi</button>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsModalOpen(false)}
+                                    disabled={isSaving} // Không cho hủy khi đang lưu
+                                    className={`px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-xl font-semibold transition-colors ${isSaving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 cursor-pointer'}`}
+                                >
+                                    Hủy bỏ
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    disabled={isSaving} // Vô hiệu hóa nút khi đang lưu
+                                    className={`px-5 py-2.5 text-white bg-blue-600 rounded-xl font-semibold transition-colors shadow-lg shadow-blue-500/30 flex items-center gap-2 ${isSaving ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-700 cursor-pointer'}`}
+                                >
+                                    {isSaving ? (
+                                        <>
+                                            <Loader2 size={18} className="animate-spin" />
+                                            Đang xử lý...
+                                        </>
+                                    ) : (
+                                        'Lưu thay đổi'
+                                    )}
+                                </button>
                             </div>
                         </form>
                     </div>

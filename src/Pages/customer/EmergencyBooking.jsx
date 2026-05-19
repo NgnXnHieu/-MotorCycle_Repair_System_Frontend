@@ -84,9 +84,9 @@ const EmergencyBooking = () => {
                     showToast('error', displayMessage);
 
                     // Nếu Toast của bạn chưa hiển thị rõ, dùng thêm alert cho chắc ăn:
-                    alert("❌ Không thể đặt lịch: " + displayMessage);
+                    alert("❌ Không thể gửi yêu cầu: " + displayMessage);
                     console.error("Lỗi lấy chi nhánh:", error);
-                    alert("Không thể tìm thấy chi nhánh quanh đây. Vui lòng thử lại!");
+                    // alert("Không thể tìm thấy chi nhánh quanh đây. Vui lòng thử lại!");
                     setIsLocating(false);
                 }
             },
@@ -189,7 +189,7 @@ const EmergencyBooking = () => {
                     <div className="flex-1 w-full text-sm text-gray-600 bg-blue-50 p-4 rounded-lg border border-blue-100">
                         {formData.latitude ? (
                             <p className="text-green-600 font-bold flex items-center gap-2">
-                                ✅ Đã xác định: {formData.latitude.toFixed(5)}, {formData.longitude.toFixed(5)}
+                                ✅ Đã xác định vị trí
                             </p>
                         ) : (
                             <p>Vui lòng cho phép truy cập vị trí để chúng tôi điều phối thợ gần nhất.</p>

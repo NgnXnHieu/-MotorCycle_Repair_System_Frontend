@@ -13,14 +13,14 @@ export default function QuickAccessCards({ contentData }) {
             path: '/servicePage',
             gradient: 'from-slate-700 to-slate-900',
         },
-        {
-            defaultIcon: Cog,
-            imgUrl: contentData?.card_2_img,
-            title: contentData?.card_2_title || 'Phụ tùng',
-            desc: 'Chính hãng 100%',
-            path: '/parts',
-            gradient: 'from-stone-600 to-stone-800',
-        },
+        // {
+        //     defaultIcon: Cog,
+        //     imgUrl: contentData?.card_2_img,
+        //     title: contentData?.card_2_title || 'Phụ tùng',
+        //     desc: 'Chính hãng 100%',
+        //     path: '/parts',
+        //     gradient: 'from-stone-600 to-stone-800',
+        // },
         {
             defaultIcon: Store,
             imgUrl: contentData?.card_3_img,
@@ -32,17 +32,17 @@ export default function QuickAccessCards({ contentData }) {
         {
             defaultIcon: ClipboardList,
             imgUrl: contentData?.card_4_img,
-            title: contentData?.card_4_title || 'Sổ bảo hành',
-            desc: 'Quản lý xe',
-            path: '/my-history',
+            title: contentData?.card_4_title || 'Dịch vụ của tôi',
+            desc: 'Dịch vụ đã mưa',
+            path: '/myServicePackagesPage',
             gradient: 'from-neutral-700 to-neutral-900',
         },
         {
             defaultIcon: Phone,
             imgUrl: contentData?.card_5_img,
-            title: contentData?.card_5_title || 'Cứu hộ 24/7',
+            title: contentData?.card_5_title || 'Cứu hộ',
             desc: 'Hỗ trợ tức thì',
-            path: '/emergency',
+            path: '/emergencyBooking',
             gradient: 'from-red-800 to-rose-950',
         }
     ];
@@ -58,7 +58,7 @@ export default function QuickAccessCards({ contentData }) {
                     <div className="w-12 h-1 bg-stone-300 mx-auto mt-3 rounded-full"></div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-10">
+                <div className="flex flex-wrap justify-center gap-6 sm:gap-10">
                     {cards.map((card, index) => {
                         const Icon = card.defaultIcon;
 
@@ -66,16 +66,16 @@ export default function QuickAccessCards({ contentData }) {
                             <Link
                                 key={index}
                                 to={card.path}
-                                // THAY ĐỔI CỐT LÕI NẰM Ở ĐÂY:
                                 // 1. border-2 border-white: Giữ cho mép thẻ luôn cứng cáp và sắc nét
                                 // 2. shadow-[0_0_25px_rgba(...)]: Ánh sáng Xám Stone tỏa đều 25px ra 4 hướng
                                 // 3. hover:shadow-[0_0_40px_rgba(...)]: Khi rê chuột, ánh sáng tỏa rộng ra 40px và đậm lên một chút
                                 className={`group flex flex-col items-center justify-center p-8 bg-white rounded-3xl 
-                                          border-2 border-white 
-                                          shadow-[0_0_25px_rgba(168,162,158,0.25)] 
-                                          transition-all duration-500 ease-out 
-                                          hover:-translate-y-2 
-                                          hover:shadow-[0_0_40px_rgba(168,162,158,0.4)] relative z-10`}
+                            w-full sm:w-[260px] md:w-[280px] /* THAY ĐỔI Ở ĐÂY: Khóa cứng chiều rộng */
+                            border-2 border-white 
+                            shadow-[0_0_25px_rgba(168,162,158,0.25)] 
+                            transition-all duration-500 ease-out 
+                            hover:-translate-y-2 
+                            hover:shadow-[0_0_40px_rgba(168,162,158,0.4)] relative z-10`}
                             >
                                 <div className={`w-20 h-20 mb-5 rounded-2xl bg-gradient-to-br ${card.gradient} flex items-center justify-center text-white shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 border border-white/10`}>
                                     {card.imgUrl ? (
@@ -89,11 +89,13 @@ export default function QuickAccessCards({ contentData }) {
                                     )}
                                 </div>
 
-                                <h3 className="font-bold text-lg text-stone-800 text-center mb-1.5 transition-colors group-hover:text-stone-950">
+                                {/* Thêm line-clamp-1 (hoặc h-thống-nhất) nếu title quá dài làm xô lệch chiều cao */}
+                                <h3 className="font-bold text-lg text-stone-800 text-center mb-1.5 transition-colors group-hover:text-stone-950 truncate w-full">
                                     {card.title}
                                 </h3>
 
-                                <p className="text-sm text-stone-500 text-center font-medium">
+                                {/* Thêm line-clamp-2 để giới hạn mô tả luôn ở 2 dòng, giúp thẻ đều nhau cả về CHIỀU CAO */}
+                                <p className="text-sm text-stone-500 text-center font-medium line-clamp-2">
                                     {card.desc}
                                 </p>
                             </Link>

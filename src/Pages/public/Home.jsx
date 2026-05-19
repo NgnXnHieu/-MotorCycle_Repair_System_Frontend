@@ -1,7 +1,6 @@
 import HeroSection from "./Home/HeroSection";
 import QuickAccessCards from "./Home/QuickAccessCards";
 import ProductCard from "../../components/common/ProductCard";
-// MỚI: Import thêm Flame icon
 import { ArrowRight, ShoppingCart, Loader2, Sparkles, Wrench, Flame } from "lucide-react";
 import { itemApi } from "../../api/itemApi";
 import { servicePackageApi } from "../../api/servicePackageApi";
@@ -10,6 +9,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from "react-router-dom";
 import AnimatedBanners from "./Home/AnimatedBanners";
 import useSmartScroll from "../../components/common/useSmartScroll";
+
+// MỚI: Import thư viện tạo animation
+import { motion } from "framer-motion";
 
 export default function Home() {
 
@@ -35,7 +37,6 @@ export default function Home() {
 
                 setItems(itemsData.content || []);
                 setServices(serviceData.content || []);
-
                 setNewestItems(newestItemsRes.content || newestItemsRes.data || newestItemsRes || []);
 
                 const rawContentList = contentRes.data || contentRes;
@@ -75,10 +76,26 @@ export default function Home() {
     const handleViewItemDetail = (id) => navigate(`/itemDetailPage/${id}`);
     const handleViewServiceDetail = (id) => navigate(`/servicePackageDetailPage/${id}`);
 
-    return (
-        <div className="flex flex-col pb-16 w-full bg-slate-50 min-h-screen font-sans">
+    // CẤU HÌNH ANIMATION CHUNG ĐỂ TÁI SỬ DỤNG
+    const slideFromLeft = {
+        hidden: { opacity: 0, x: -100 },
+        visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: "easeOut" } }
+    };
 
-            {/* HERO SECTION */}
+    const slideFromRight = {
+        hidden: { opacity: 0, x: 100 },
+        visible: { opacity: 1, x: 0, transition: { duration: 0.7, ease: "easeOut" } }
+    };
+
+    const slideUp = {
+        hidden: { opacity: 0, y: 50 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } }
+    };
+
+    return (
+        <div className="flex flex-col pb-16 w-full bg-slate-50 min-h-screen font-sans overflow-hidden">
+
+            {/* HERO SECTION (Không cần animate khi cuộn vì nó nằm ngay đầu) */}
             <HeroSection
                 title={pageContent.HERO?.hero_title?.value}
                 subtitle={pageContent.HERO?.hero_subtitle?.value}
@@ -89,8 +106,14 @@ export default function Home() {
                 btn2Url={pageContent.HERO?.hero_btn_2?.url}
             />
 
-            {/* QUICK ACCESS (TIỆN ÍCH) */}
-            <div className="relative z-10 -mt-6 sm:-mt-10">
+            {/* QUICK ACCESS (TIỆN ÍCH) - Bay từ dưới lên */}
+            <motion.div
+                className="relative z-10 -mt-6 sm:-mt-10"
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                variants={slideUp}
+            >
                 <QuickAccessCards
                     contentData={{
                         card_1_title: pageContent.QUICK_ACCESS?.card_1_title?.value,
@@ -105,14 +128,20 @@ export default function Home() {
                         card_5_img: pageContent.QUICK_ACCESS?.card_5_img?.value,
                     }}
                 />
-            </div>
+            </motion.div>
 
             {/* MAIN CONTENT WRAPPER */}
             <div className="max-w-[90rem] mx-auto px-4 sm:px-6 w-full flex flex-col gap-10 mt-4">
 
-                {/* KHỐI TOP 5 SẢN PHẨM MỚI NHẤT (Nổi bật rực lửa) */}
+                {/* KHỐI TOP 5 SẢN PHẨM MỚI NHẤT - Bay từ TRÁI sang */}
                 {newestItems && newestItems.length > 0 && (
-                    <section className="bg-gradient-to-r from-orange-50 to-red-50 rounded-[2rem] p-6 sm:p-10 shadow-md border border-orange-200">
+                    <motion.section
+                        className="bg-gradient-to-r from-orange-50 to-red-50 rounded-[2rem] p-6 sm:p-10 shadow-md border border-orange-200"
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, amount: 0.1 }}
+                        variants={slideFromLeft}
+                    >
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4 border-b border-orange-200/50 pb-6">
                             <div>
                                 <h2 className="text-3xl font-extrabold text-red-600 tracking-tight flex items-center gap-3">
@@ -129,31 +158,44 @@ export default function Home() {
                                     name={part.name}
                                     price={part.price}
                                     image={part.imageUrl}
-                                    actionText="Chi tiết"
+                                    actionText="Xem ngay"
                                     onAction={() => handleViewItemDetail(part.id)}
                                     actionIcon={ArrowRight}
                                 />
                             ))}
                         </div>
-                    </section>
+                    </motion.section>
                 )}
 
-                {/* BANNERS: Nằm gọn gàng giữa trang */}
-                <AnimatedBanners
-                    contentData={{
-                        banner_1_img_1: pageContent.PROMO_BANNERS?.banner_1_img_1?.value,
-                        banner_1_img_2: pageContent.PROMO_BANNERS?.banner_1_img_2?.value,
-                        banner_1_caption: pageContent.PROMO_BANNERS?.banner_1_caption?.value,
-                        banner_1_link: pageContent.PROMO_BANNERS?.banner_1_img_1?.url,
-                        banner_2_img_1: pageContent.PROMO_BANNERS?.banner_2_img_1?.value,
-                        banner_2_img_2: pageContent.PROMO_BANNERS?.banner_2_img_2?.value,
-                        banner_2_caption: pageContent.PROMO_BANNERS?.banner_2_caption?.value,
-                        banner_2_link: pageContent.PROMO_BANNERS?.banner_2_img_1?.url,
-                    }}
-                />
+                {/* BANNERS - Bay từ PHẢI sang */}
+                <motion.div
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.2 }}
+                    variants={slideFromRight}
+                >
+                    <AnimatedBanners
+                        contentData={{
+                            banner_1_img_1: pageContent.PROMO_BANNERS?.banner_1_img_1?.value,
+                            banner_1_img_2: pageContent.PROMO_BANNERS?.banner_1_img_2?.value,
+                            banner_1_caption: pageContent.PROMO_BANNERS?.banner_1_caption?.value,
+                            banner_1_link: pageContent.PROMO_BANNERS?.banner_1_img_1?.url,
+                            banner_2_img_1: pageContent.PROMO_BANNERS?.banner_2_img_1?.value,
+                            banner_2_img_2: pageContent.PROMO_BANNERS?.banner_2_img_2?.value,
+                            banner_2_caption: pageContent.PROMO_BANNERS?.banner_2_caption?.value,
+                            banner_2_link: pageContent.PROMO_BANNERS?.banner_2_img_1?.url,
+                        }}
+                    />
+                </motion.div>
 
-                {/* KHỐI 1: DANH SÁCH PHỤ TÙNG */}
-                <section className="bg-white rounded-[2rem] p-6 sm:p-10 shadow-sm border border-slate-200">
+                {/* KHỐI 1: DANH SÁCH PHỤ TÙNG - Bay từ TRÁI sang */}
+                <motion.section
+                    className="bg-white rounded-[2rem] p-6 sm:p-10 shadow-sm border border-slate-200"
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.1 }}
+                    variants={slideFromLeft}
+                >
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4 border-b border-slate-100 pb-6">
                         <div>
                             <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
@@ -161,7 +203,7 @@ export default function Home() {
                             </h2>
                         </div>
 
-                        <Link to="/sparePartsPage" className="group inline-flex items-center gap-2 px-5 py-2.5 bg-slate-50 text-slate-700 rounded-xl font-semibold text-sm transition-all duration-300 hover:bg-slate-900 hover:text-white border border-slate-200 hover:border-slate-900">
+                        <Link to="/sparePartsPage" className="group inline-flex items-center gap-2 px-5 py-2.5 bg-slate-200 text-slate-700 rounded-xl font-semibold text-sm transition-all duration-300 hover:bg-slate-900 hover:text-white border border-slate-200 hover:border-slate-900">
                             Khám phá kho <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                         </Link>
                     </div>
@@ -173,16 +215,22 @@ export default function Home() {
                                 name={part.name}
                                 price={part.price}
                                 image={part.imageUrl}
-                                actionText="Chi tiết"
+                                actionText="Xem ngay"
                                 onAction={() => handleViewItemDetail(part.id)}
                                 actionIcon={ArrowRight}
                             />
                         ))}
                     </div>
-                </section>
+                </motion.section>
 
-                {/* KHỐI 2: ĐĂNG KÝ DỊCH VỤ */}
-                <section className="bg-white rounded-[2rem] p-6 sm:p-10 shadow-sm border border-slate-200">
+                {/* KHỐI 2: ĐĂNG KÝ DỊCH VỤ - Bay từ PHẢI sang */}
+                <motion.section
+                    className="bg-white rounded-[2rem] p-6 sm:p-10 shadow-sm border border-slate-200"
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.1 }}
+                    variants={slideFromRight}
+                >
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4 border-b border-slate-100 pb-6">
                         <div>
                             <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
@@ -190,7 +238,7 @@ export default function Home() {
                             </h2>
                         </div>
 
-                        <Link to="/servicePackagePage" className="group inline-flex items-center gap-2 px-5 py-2.5 bg-slate-50 text-slate-700 rounded-xl font-semibold text-sm transition-all duration-300 hover:bg-blue-600 hover:text-white border border-slate-200 hover:border-blue-600 hover:shadow-lg hover:shadow-blue-200">
+                        <Link to="/servicePackagePage" className="group inline-flex items-center gap-2 px-5 py-2.5 bg-blue-100 text-slate-700 rounded-xl font-semibold text-sm transition-all duration-300 hover:bg-blue-600 hover:text-white border border-slate-200 hover:border-blue-600 hover:shadow-lg hover:shadow-blue-200">
                             Tất cả dịch vụ <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                         </Link>
                     </div>
@@ -202,13 +250,13 @@ export default function Home() {
                                 name={service.name}
                                 price={service.price}
                                 image={service.image}
-                                actionText="Đặt lịch ngay"
+                                actionText="Chi tiết"
                                 onAction={() => handleViewServiceDetail(service.id)}
                                 actionIcon={ShoppingCart}
                             />
                         ))}
                     </div>
-                </section>
+                </motion.section>
 
             </div>
         </div>

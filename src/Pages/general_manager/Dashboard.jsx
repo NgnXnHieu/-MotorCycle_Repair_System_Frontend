@@ -78,7 +78,7 @@ const Dashboard = () => {
                 } else {
                     // 2. CHỌN 1 CHI NHÁNH CỤ THỂ (BM)
                     apiParams.branchId = filter.branch;
-
+                    console.log(apiParams)
                     // Dùng Promise.all để gọi 2 API song song, tối ưu hiệu năng
                     const [statsRes, chartRes] = await Promise.all([
                         repairOrderApi.getDashboard4BM(apiParams),
@@ -107,7 +107,7 @@ const Dashboard = () => {
 
                 }
             } catch (error) {
-                console.error("Lỗi khi tải dữ liệu Dashboard:", error);
+                console.error("Lỗi khi tải dữ liệu Dashboard:", error?.response);
                 // Có thể thêm Toast/Notification báo lỗi tại đây
             } finally {
                 setIsLoading(false);
